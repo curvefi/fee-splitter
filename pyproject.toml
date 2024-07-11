@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "autobribe"
+version = "0.1.0"
+description = ""
+authors = ["Curve.fi"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.4"
+vyper = "^0.4.0"
+titanoboa = { git = "https://github.com/vyperlang/titanoboa.git", branch = "vyper-0.4.0" }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
