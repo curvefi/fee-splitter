@@ -121,6 +121,8 @@ def post_bribe(amount: uint256, gauge: address, data: Bytes[1024]):
     """
     access_control._check_role(BRIBE_POSTER, msg.sender)
 
+    assert  amount <= self.gauges_cap[gauge]
+
     extcall self.managed_asset.transfer(self.bribe_logic, amount)
     extcall IBribeLogic(self.bribe_logic).bribe(amount, gauge, data)
 
