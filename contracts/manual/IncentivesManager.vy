@@ -11,7 +11,7 @@
     voting incentives and bounties interchangably to refer
     to the action of granting rewards when a veCRV holder
     votes for a designated gauge.
-@custom:security TODO add security contract
+@custom:security security@curve.fi
 """
 
 from ethereum.ercs import IERC20
