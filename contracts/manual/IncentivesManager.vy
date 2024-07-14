@@ -33,11 +33,13 @@ BRIBE_MANAGER: public(constant(bytes32)) = keccak256("BRIBE_MANAGER")
 TOKEN_RESCUER: public(constant(bytes32)) = keccak256("TOKEN_RESCUER")
 EMERGENCY_ADMIN: public(constant(bytes32)) = keccak256("EMERGENCY_ADMIN")
 
-MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 100**18
+MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 10**23 # 100.000 tokens
 
 managed_asset: IERC20
-bribe_logic: address
-gauge_caps: HashMap[address, uint256]
+bribe_logic: public(address)
+gauge_caps: public(HashMap[address, uint256])
+
+version: public(constant(String[8])) = "0.4.1"
 
 @deploy
 def __init__(managed_asset: address):
@@ -88,7 +90,7 @@ def update_gauge_cap(gauge: address, cap: uint256):
     access_control._check_role(BRIBE_MANAGER, msg.sender)
 
     if cap > MAX_INCENTIVES_PER_GAUGE:
-        raise "New bribe cap too big"
+        raise "manager: new bribe cap too big"
 
     self.gauge_caps[gauge] = cap
 
@@ -121,7 +123,7 @@ def post_bribe(amount: uint256, gauge: address, data: Bytes[1024]):
     """
     access_control._check_role(BRIBE_POSTER, msg.sender)
 
-    assert  amount <= self.gauges_cap[gauge]
+    assert amount <= self.gauge_caps[gauge]
 
     extcall self.managed_asset.transfer(self.bribe_logic, amount)
     extcall IBribeLogic(self.bribe_logic).bribe(amount, gauge, data)
@@ -138,7 +140,7 @@ def recover_erc20(token: address):
     access_control._check_role(TOKEN_RESCUER, msg.sender)
 
     if token == self.managed_asset.address:
-        raise "Cannot recover managed asset"
+        raise "manager: cannot recover managed asset"
 
     balance: uint256 = staticcall IERC20(token).balanceOf(self)
     # TODO `default_return_value`?
