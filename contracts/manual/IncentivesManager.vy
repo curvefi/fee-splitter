@@ -39,7 +39,7 @@ managed_asset: IERC20
 bribe_logic: public(address)
 gauge_caps: public(HashMap[address, uint256])
 
-version: public(constant(String[8])) = "0.4.1"
+version: public(constant(String[8])) = "0.1.0"
 
 @deploy
 def __init__(managed_asset: address):
