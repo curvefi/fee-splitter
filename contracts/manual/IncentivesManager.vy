@@ -91,7 +91,7 @@ def set_gauge_cap(gauge: address, cap: uint256):
     """
     access_control._check_role(BRIBE_MANAGER, msg.sender)
 
-    assert cap > MAX_INCENTIVES_PER_GAUGE, "manager: new bribe cap too big"
+    assert cap <= MAX_INCENTIVES_PER_GAUGE, "manager: new bribe cap too big"
 
     self.gauge_caps[gauge] = cap
 
