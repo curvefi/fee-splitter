@@ -28,31 +28,32 @@ initializes: access_control
 
 exports: access_control.__interface__
 
+event SetGaugeCap:
+    gauge: address
+    cap: uint256
+
+event SetBribeLogic:
+    bribe_logic: address
+
+version: public(constant(String[8])) = "0.1.0"
+
+MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 10**23 # 100.000 tokens (crvUSD)
+
 BRIBE_POSTER: public(constant(bytes32)) = keccak256("BRIBE_POSTER")
 BRIBE_MANAGER: public(constant(bytes32)) = keccak256("BRIBE_MANAGER")
 TOKEN_RESCUER: public(constant(bytes32)) = keccak256("TOKEN_RESCUER")
 EMERGENCY_ADMIN: public(constant(bytes32)) = keccak256("EMERGENCY_ADMIN")
 
-MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 10**23 # 100.000 tokens
-
 managed_asset: IERC20
-bribe_logic: public(address)
+bribe_logic: public(IBribeLogic)
 gauge_caps: public(HashMap[address, uint256])
 
-version: public(constant(String[8])) = "0.1.0"
 
 @deploy
-def __init__(managed_asset: address):
-    # msg.sender is admin
-    access_control.__init__()
-    self.managed_asset = IERC20(managed_asset)
-
-@external
-def initialize(bribe_poster: address, bribe_manager: address, token_rescuer: address, emergency_admin: address):
+def __init__(managed_asset: address, bribe_manager: address, bribe_poster: address, token_rescuer: address, emergency_admin: address):
     """
-    @notice Setup function to be called right after deployment.
-    @dev once this function is called the deployer loses the
-        to call it again making it renounce ownership of the contract.
+    @dev After this function is called ownership of the contract is
+        renounced making it impossible.
     @param bribe_poster The entity in charge of posting bribes
     @param bribe_manager The entity in charge of whitelisting gauges and
         updating the bribe logic (in case the voting market has to be changed)
@@ -61,8 +62,9 @@ def initialize(bribe_poster: address, bribe_manager: address, token_rescuer: add
     @param emergency_admin The entity in charge of moving the funds elsewhere in
     case of emergency.
     """
-    # only deployer can initialize the contract
-    access_control._check_role(access_control.DEFAULT_ADMIN_ROLE, msg.sender)
+    # msg.sender is admin
+    access_control.__init__()
+    self.managed_asset = IERC20(managed_asset)
 
     # grant roles to the different managers
     access_control._grant_role(BRIBE_POSTER, bribe_poster)
@@ -74,7 +76,7 @@ def initialize(bribe_poster: address, bribe_manager: address, token_rescuer: add
     access_control._revoke_role(access_control.DEFAULT_ADMIN_ROLE, msg.sender)
 
 @external
-def update_gauge_cap(gauge: address, cap: uint256):
+def set_gauge_cap(gauge: address, cap: uint256):
     """
     @notice Setter to change the maximum amount of voting incentives
         that can be allocated in a single bounty.
@@ -89,10 +91,11 @@ def update_gauge_cap(gauge: address, cap: uint256):
     """
     access_control._check_role(BRIBE_MANAGER, msg.sender)
 
-    if cap > MAX_INCENTIVES_PER_GAUGE:
-        raise "manager: new bribe cap too big"
+    assert cap > MAX_INCENTIVES_PER_GAUGE, "manager: new bribe cap too big"
 
     self.gauge_caps[gauge] = cap
+
+    log SetGaugeCap(gauge, cap)
 
 @external
 def set_bribe_logic(bribe_logic: address):
@@ -108,7 +111,11 @@ def set_bribe_logic(bribe_logic: address):
     """
     access_control._check_role(BRIBE_MANAGER, msg.sender)
 
-    self.bribe_logic = bribe_logic
+    # TODO add interface support
+
+    self.bribe_logic = IBribeLogic(bribe_logic)
+
+    log SetBribeLogic(bribe_logic)
 
 # TODO use constant from interface for size
 @external
@@ -125,17 +132,19 @@ def post_bribe(amount: uint256, gauge: address, data: Bytes[1024]):
 
     assert amount <= self.gauge_caps[gauge]
 
-    extcall self.managed_asset.transfer(self.bribe_logic, amount)
-    extcall IBribeLogic(self.bribe_logic).bribe(amount, gauge, data)
+    extcall self.managed_asset.transfer(self.bribe_logic.address, amount)
+    extcall self.bribe_logic.bribe(amount, gauge, data)
 
-    assert staticcall self.managed_asset.balanceOf(self.bribe_logic) == 0, "Transfered assets must be fully spent or leftovers should be returned"
+    assert staticcall self.managed_asset.balanceOf(self.bribe_logic.address) == 0, "Transfered assets must be fully spent or leftovers should be returned"
 
 
 @external
-def recover_erc20(token: address):
+def recover_erc20(token: address, receiver: address):
     """
-    Recover any ERC20 token (except the managed one) erroneously
+    @notice Recover any ERC20 token (except the managed one) erroneously
     sent to this contract.
+    @param token The token to be recovered
+    @param receiver The address to which the tokens will be sent
     """
     access_control._check_role(TOKEN_RESCUER, msg.sender)
 
@@ -143,16 +152,16 @@ def recover_erc20(token: address):
         raise "manager: cannot recover managed asset"
 
     balance: uint256 = staticcall IERC20(token).balanceOf(self)
-    # TODO `default_return_value`?
-    extcall IERC20(token).transfer(msg.sender, balance)
+    assert extcall IERC20(token).transfer(receiver, balance, default_return_value=True)
 
 @external
-def emergency_migration(safe_receiver: address):
+def emergency_migration(receiver: address):
     """
     @notice Migration function in case the funds need to be moved to
     another address.
+    @param receiver The address to which the funds will be sent
     """
     access_control._check_role(EMERGENCY_ADMIN, msg.sender)
 
     balance: uint256 = staticcall self.managed_asset.balanceOf(self)
-    extcall self.managed_asset.transfer(safe_receiver, balance)
+    extcall self.managed_asset.transfer(receiver, balance)
