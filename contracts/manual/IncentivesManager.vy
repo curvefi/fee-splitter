@@ -124,7 +124,7 @@ def set_bribe_logic(bribe_logic: address):
 
 # TODO use constant from interface for size
 @external
-def post_bribe(amount: uint256, gauge: address, data: Bytes[1024]):
+def post_bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     """
     @notice post a bribe using the `bribe_logic` contract.
     @dev This function temporarily approves the specified
@@ -138,7 +138,7 @@ def post_bribe(amount: uint256, gauge: address, data: Bytes[1024]):
     assert amount <= self.gauge_caps[gauge], "manager: bribe exceeds cap"
 
     extcall self.managed_asset.transfer(self.bribe_logic.address, amount)
-    extcall self.bribe_logic.bribe(amount, gauge, data)
+    extcall self.bribe_logic.bribe(gauge, amount, data)
 
     assert staticcall self.managed_asset.balanceOf(self.bribe_logic.address) == 0, "manager: bribe not fully spent"
 

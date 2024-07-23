@@ -17,7 +17,7 @@ def __init__(token: address, manager: address):
     self.manager = manager
 
 @external
-def bribe(amount: uint256, gauge: address, data: Bytes[1024]):
+def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     self.received_amount = amount
     self.received_gauge = gauge
     self.received_data = data

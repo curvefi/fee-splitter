@@ -28,7 +28,7 @@ def __init__(crvusd: address, votemarket: address, incentives_manager: address):
 
 # TODO swap args for consistency
 @external
-def bribe(amount: uint256, gauge: address, data: Bytes[1024]):
+def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     ownable._check_owner()
 
     max_amount_per_vote: uint256 = abi_decode(data, (uint256))

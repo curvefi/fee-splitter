@@ -72,8 +72,8 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
 
     with boa.env.prank(manager.address):
         stakedao_logic.bribe(
-            400,
             random_gauge,
+            400,
             bytes(encoded_max_amount_per_vote)
         )
 
@@ -108,8 +108,8 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
 
     with boa.env.prank(manager.address):
         stakedao_logic.bribe(
-            increase_amount,
             random_gauge,
+            increase_amount,
             bytes(encoded_increase_max_amount_per_vote)
         )
 
@@ -126,4 +126,4 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
 
 def test_bribe_unauthorized(stakedao_logic):
     with boa.reverts("ownable: caller is not the owner"):
-        stakedao_logic.bribe(400, boa.env.generate_address(), bytes())
+        stakedao_logic.bribe(boa.env.generate_address(), 400, bytes())

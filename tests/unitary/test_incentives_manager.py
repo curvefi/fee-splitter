@@ -94,7 +94,7 @@ def test_post_bribe_expected(manager_mock_voting_market, mock_voting_market,
         m.set_gauge_cap(random_gauge, random_amount)
 
     with boa.env.prank(bribe_poster):
-        m.post_bribe(random_amount, random_gauge, bytes())
+        m.post_bribe(random_gauge, random_amount, bytes())
 
     assert mock_voting_market.received_amount() == random_amount
     assert mock_voting_market.received_gauge() == random_gauge
@@ -103,7 +103,7 @@ def test_post_bribe_expected(manager_mock_voting_market, mock_voting_market,
 
 def test_post_bribe_unauthorized(manager):
     with boa.reverts("access_control: account is missing role"):
-        manager.post_bribe(1234, boa.env.generate_address(), bytes())
+        manager.post_bribe(boa.env.generate_address(), 1234, bytes())
 
 
 @pytest.mark.parametrize("random_amount", list(range(0, 10 ** 23 + 1, 10**22)))
@@ -117,7 +117,7 @@ def test_post_bribe_more_than_cap(manager_mock_voting_market, bribe_manager, bri
 
     with boa.reverts("manager: bribe exceeds cap"):
         with boa.env.prank(bribe_poster):
-            m.post_bribe(random_amount + 1, random_gauge, bytes())
+            m.post_bribe(random_gauge, random_amount + 1, bytes())
 
 def test_post_bribe_funds_not_fully_spent(manager_mock_voting_market, mock_crvusd, bribe_manager, bribe_poster, mock_voting_market):
     m = manager_mock_voting_market
@@ -131,7 +131,7 @@ def test_post_bribe_funds_not_fully_spent(manager_mock_voting_market, mock_crvus
 
     with boa.reverts("manager: bribe not fully spent"):
         with boa.env.prank(bribe_poster):
-            m.post_bribe(random_amount, random_gauge, bytes(b"non-empty data"))
+            m.post_bribe(random_gauge, random_amount, bytes(b"non-empty data"))
 
 
 
