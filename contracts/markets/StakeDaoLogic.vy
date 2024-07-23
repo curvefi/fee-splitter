@@ -26,7 +26,6 @@ def __init__(crvusd: address, votemarket: address, incentives_manager: address):
     self.crvusd = IERC20(crvusd)
 
 
-# TODO swap args for consistency
 @external
 def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     ownable._check_owner()
