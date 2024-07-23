@@ -26,11 +26,11 @@ def __init__(crvusd: address, votemarket: address, incentives_manager: address):
     self.crvusd = IERC20(crvusd)
 
 
-# TODO add inherhit doc from interface tag
+# TODO swap args for consistency
 @external
 def bribe(amount: uint256, gauge: address, data: Bytes[1024]):
     ownable._check_owner()
-    # TODO add ownership checks
+
     max_amount_per_vote: uint256 = abi_decode(data, (uint256))
     # TODO is it safe to assume that bounty_id will never be 0?
     if self.bounty_id[gauge] == 0:
