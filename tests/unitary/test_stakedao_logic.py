@@ -70,12 +70,16 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
 
     mock_crvusd.mint_for_testing(stakedao_logic, leftover_crvusd)
 
+    assert stakedao_logic.bounty_id(random_gauge) == 0
+
     with boa.env.prank(manager.address):
         stakedao_logic.bribe(
             random_gauge,
             400,
             bytes(encoded_max_amount_per_vote)
         )
+
+    assert stakedao_logic.bounty_id(random_gauge) == 1234 # from mock
 
     stakedao_logic.eval(f"self.bounty_id[{random_gauge}] = {random_id}")
 
@@ -122,6 +126,9 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
     # cleaning dust
     assert mock_crvusd.balanceOf(stakedao_logic.address) == 0
     assert mock_crvusd.balanceOf(manager.address) == leftover_crvusd * 2
+
+    # this was manually overriden in the test through eval
+    assert stakedao_logic.bounty_id(random_gauge) == random_id # from mock
 
 
 def test_bribe_unauthorized(stakedao_logic):
