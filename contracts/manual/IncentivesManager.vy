@@ -35,7 +35,7 @@ event SetGaugeCap:
 event SetBribeLogic:
     bribe_logic: address
 
-version: public(constant(String[8])) = "0.1.0"
+version: public(constant(String[8])) = "0.1.0" # (no guarantees on ABI stability)
 
 MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 10**23 # 100.000 tokens (crvUSD)
 
@@ -85,10 +85,10 @@ def set_gauge_cap(gauge: address, cap: uint256):
     """
     @notice Setter to change the maximum amount of voting incentives
         that can be allocated in a single bounty.
-    @dev this function is a safeguard to prevent fatfingering large
-        amounts. This **does not** prevent spending more than
-        `MAX_INCENTIVES_PER_GAUGE` since one can create multiple
-        bouties for the same gauge
+    @dev This function is a safeguard to prevent fatfingering large
+        amounts or bribing the wrong gauge. This **does not**
+        prevent spending more than `MAX_INCENTIVES_PER_GAUGE`
+        since one can create multiple bouties for the same gauge
     @param gauge Targeted gauge for the udpate of the caps
     @param cap Maximum amount of incentives that can be allocated
         at once. Set to zero to prevent incentives from being
@@ -135,12 +135,12 @@ def post_bribe(amount: uint256, gauge: address, data: Bytes[1024]):
     """
     access_control._check_role(BRIBE_POSTER, msg.sender)
 
-    assert amount <= self.gauge_caps[gauge]
+    assert amount <= self.gauge_caps[gauge], "manager: bribe exceeds cap"
 
     extcall self.managed_asset.transfer(self.bribe_logic.address, amount)
     extcall self.bribe_logic.bribe(amount, gauge, data)
 
-    assert staticcall self.managed_asset.balanceOf(self.bribe_logic.address) == 0, "Transfered assets must be fully spent or leftovers should be returned"
+    assert staticcall self.managed_asset.balanceOf(self.bribe_logic.address) == 0, "manager: bribe not fully spent"
 
 
 @external
