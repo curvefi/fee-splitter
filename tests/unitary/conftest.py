@@ -3,7 +3,7 @@ from pytest import fixture
 
 
 @fixture
-def mock_erc20():
+def mock_crvusd():
     from tests.mocks import MockERC20
     return MockERC20()
 
@@ -29,15 +29,15 @@ def emergency_admin():
 
 
 @fixture
-def manager(mock_erc20, bribe_poster, bribe_manager, token_rescuer, emergency_admin):
+def manager(mock_crvusd, bribe_poster, bribe_manager, token_rescuer, emergency_admin):
     from contracts.manual import IncentivesManager
-    return IncentivesManager(mock_erc20, bribe_manager, bribe_poster, token_rescuer, emergency_admin)
+    return IncentivesManager(mock_crvusd, bribe_manager, bribe_poster, token_rescuer, emergency_admin)
 
 
 @fixture
-def mock_voting_market(mock_erc20, manager):
+def mock_voting_market(mock_crvusd, manager):
     from tests.mocks import MockVotingMarket
-    return MockVotingMarket(mock_erc20, manager)
+    return MockVotingMarket(mock_crvusd, manager)
 
 
 @fixture()
