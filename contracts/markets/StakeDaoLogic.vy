@@ -1,5 +1,20 @@
 # pragma version ~=0.4.0
 
+"""
+@title StakeDaoLogic
+@license TODO
+@author curve.fi
+@notice This contract lets trusted third parties post
+    Curve-sponored bribes on StakeDAO's Votemarket through
+    the IncentivesManager contract.
+@dev The contract relies on snekmate for access control.
+@dev The contract uses the expressions: bribes,
+    voting incentives and bounties interchangably to refer
+    to the action of granting rewards when a veCRV holder
+    votes for a designated gauge.
+@custom:security security@curve.fi TODO add stakedao
+"""
+
 from snekmate.auth import ownable
 from contracts.manual import IBribeLogic
 import StakeDaoMarket as Votemarket
@@ -14,8 +29,17 @@ crvusd: public(IERC20)
 bounty_id: public(HashMap[address, uint256])
 BRIBE_DURATION: constant(uint256) = 2 # bi-weekly
 
+# TODO add recovery mechanism
+
 @deploy
 def __init__(crvusd: address, votemarket: address, incentives_manager: address):
+    """
+    @param crvusd The address of the CRVUSD token
+    @param votemarket The address of the StakeDAO Votemarket instance
+    @param incentives_manager The address of the IncentivesManager contract
+    @dev The IncentivesManager contract will be the owner of this contract
+        and its sole user.
+    """
     assert crvusd != empty(address), "zeroaddr: crvusd"
     assert votemarket != empty(address), "zeroaddr: votemarket"
     assert incentives_manager != empty(address), "zeroaddr: incentives_manager"
@@ -28,6 +52,14 @@ def __init__(crvusd: address, votemarket: address, incentives_manager: address):
 
 @external
 def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
+    """
+    @notice Posts a bribe on StakeDAO's Votemarket
+    @dev The data payload is expected to contain the maximum amount
+        of CRVUSD that can be distributed per vote.
+    @dev The first bribe will create a new bounty, subsequent bribes
+        will increase the duration of the existing bounties allowing
+        rewards to be rolled over (if not claimed).
+    """
     ownable._check_owner()
 
     max_amount_per_vote: uint256 = abi_decode(data, (uint256))
