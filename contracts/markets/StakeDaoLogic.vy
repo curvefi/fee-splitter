@@ -2,7 +2,7 @@
 
 """
 @title StakeDaoLogic
-@license TODO
+@license Copyright (c) Curve.Fi, 2020-2024 - all rights reserved
 @author curve.fi
 @notice This contract lets trusted third parties post
     Curve-sponored bribes on StakeDAO's Votemarket through
@@ -12,7 +12,7 @@
     voting incentives and bounties interchangably to refer
     to the action of granting rewards when a veCRV holder
     votes for a designated gauge.
-@custom:security security@curve.fi TODO add stakedao
+@custom:security security@curve.fi contact@stakedao.org
 """
 
 from snekmate.auth import ownable

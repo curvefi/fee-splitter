@@ -1,12 +1,11 @@
 # pragma version ~=0.4.0
 """
 @title IncentivesManager
-@license TODO
+@license Copyright (c) Curve.Fi, 2020-2024 - all rights reserved
 @author curve.fi
 @notice Non-custodial contract to let trusted third parties
     handle Curve-aligned voting incentives.
-@dev The contract relies on snekmate for ...
-    Most of the usecases consdier the DAO as the
+@dev The contract relies on snekmate for access control.
 @dev The contract uses the expressions: bribes,
     voting incentives and bounties interchangably to refer
     to the action of granting rewards when a veCRV holder
