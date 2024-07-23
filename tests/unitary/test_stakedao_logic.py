@@ -1,5 +1,6 @@
 import boa
 from contracts.markets import StakeDaoLogic
+from eth_abi import encode
 
 
 def test_constructor(stakedao_logic, crvusd, stakedao_market,
@@ -54,19 +55,12 @@ def test_increase_bounty_duration(stakedao_logic, stakedao_market):
     assert stakedao_market.increase_newMaxPricePerVote() == 1234
 
 
-def test_bribe(stakedao_logic, stakedao_market, crvusd,
-               manager):
-    encoder_source = """
-    @external
-    def encode(max_amount_per_vote: uint256) -> Bytes[32]:
-        return abi_encode(max_amount_per_vote)
-    """
+def test_bribe(stakedao_logic, stakedao_market, crvusd, manager):
+    max_amount_per_vote = 12345
+    encoded_max_amount_per_vote = encode(["uint256"], [max_amount_per_vote])
 
     random_gauge = boa.env.generate_address()
     random_id = 43958
-    encoder = boa.loads(encoder_source)
-    max_amount_per_vote = 12345
-    encoded_max_amount_per_vote = encoder.encode(max_amount_per_vote)
 
     leftover_crvusd = 10 ** 18
 
@@ -89,8 +83,7 @@ def test_bribe(stakedao_logic, stakedao_market, crvusd,
     assert stakedao_market.creation_manager() == stakedao_logic.address
     assert stakedao_market.creation_rewardToken() == crvusd.address
     assert stakedao_market.creation_numberOfPeriods() == 2
-    assert (stakedao_market.creation_maxRewardPerVote() ==
-            max_amount_per_vote)
+    assert (stakedao_market.creation_maxRewardPerVote() == max_amount_per_vote)
     assert stakedao_market.creation_totalRewardAmount() == 400
     assert stakedao_market.eval("len(self.creation_blacklist)") == 0
     assert stakedao_market.creation_upgradeable() == False
@@ -108,8 +101,7 @@ def test_bribe(stakedao_logic, stakedao_market, crvusd,
     # we test for a second call because this time the bounty already exists
     increase_max_amount_per_vote = 54321
     increase_amount = 401
-    encoded_increase_max_amount_per_vote = encoder.encode(
-        increase_max_amount_per_vote)
+    encoded_increase_max_amount_per_vote= encode(["uint256"], [increase_max_amount_per_vote])
     crvusd.mint_for_testing(stakedao_logic, leftover_crvusd)
 
     with boa.env.prank(manager.address):
