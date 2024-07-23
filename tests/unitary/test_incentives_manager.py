@@ -5,8 +5,8 @@ from tests.mocks import MockERC20
 from contracts.manual import IncentivesManager
 
 
-def test_constructor_expected(manager, mock_crvusd, bribe_manager, bribe_poster,
-                     token_rescuer, emergency_admin):
+def test_constructor_expected(manager, crvusd, bribe_manager, bribe_poster,
+                              token_rescuer, emergency_admin):
     m = manager
     assert manager.MAX_INCENTIVES_PER_GAUGE() == int(10 ** 23)
 
@@ -15,7 +15,7 @@ def test_constructor_expected(manager, mock_crvusd, bribe_manager, bribe_poster,
     assert manager.TOKEN_RESCUER() == boa.eval("keccak256('TOKEN_RESCUER')")
     assert manager.EMERGENCY_ADMIN() == boa.eval("keccak256('EMERGENCY_ADMIN')")
 
-    assert manager._storage.managed_asset.get() == mock_crvusd.address
+    assert manager._storage.managed_asset.get() == crvusd.address
     assert manager.bribe_logic() == boa.eval("empty(address)")
 
     assert m.hasRole(m.BRIBE_POSTER(), bribe_poster)
@@ -24,18 +24,18 @@ def test_constructor_expected(manager, mock_crvusd, bribe_manager, bribe_poster,
     assert m.hasRole(m.EMERGENCY_ADMIN(), emergency_admin)
     assert not m.hasRole(m.DEFAULT_ADMIN_ROLE(), boa.env.eoa)
 
-def test_constructor_zero_address(mock_crvusd, bribe_manager, bribe_poster, token_rescuer, emergency_admin):
+def test_constructor_zero_address(crvusd, bribe_manager, bribe_poster, token_rescuer, emergency_admin):
     zero = boa.eval("empty(address)")
     with boa.reverts("zeroaddr: managed_asset"):
         IncentivesManager(zero, bribe_manager, bribe_poster, token_rescuer, emergency_admin)
     with boa.reverts("zeroaddr: bribe_manager"):
-        IncentivesManager(mock_crvusd, zero, bribe_poster, token_rescuer, emergency_admin)
+        IncentivesManager(crvusd, zero, bribe_poster, token_rescuer, emergency_admin)
     with boa.reverts("zeroaddr: bribe_poster"):
-        IncentivesManager(mock_crvusd, bribe_manager, zero, token_rescuer, emergency_admin)
+        IncentivesManager(crvusd, bribe_manager, zero, token_rescuer, emergency_admin)
     with boa.reverts("zeroaddr: token_rescuer"):
-        IncentivesManager(mock_crvusd, bribe_manager, bribe_poster, zero, emergency_admin)
+        IncentivesManager(crvusd, bribe_manager, bribe_poster, zero, emergency_admin)
     with boa.reverts("zeroaddr: emergency_admin"):
-        IncentivesManager(mock_crvusd, bribe_manager, bribe_poster, token_rescuer, zero)
+        IncentivesManager(crvusd, bribe_manager, bribe_poster, token_rescuer, zero)
 
 
 
@@ -82,13 +82,13 @@ def test_set_bribe_logic_unauthorized(manager, bribe_poster):
         m.set_bribe_logic(random_logic)
 
 
-def test_post_bribe_expected(manager_mock_voting_market, mock_voting_market,
-                             bribe_poster, bribe_manager, mock_crvusd):
-    m = manager_mock_voting_market
+def test_post_bribe_expected(manager_with_voting_market, generic_voting_market,
+                             bribe_poster, bribe_manager, crvusd):
+    m = manager_with_voting_market
 
     random_gauge = boa.env.generate_address()
     random_amount = 100
-    mock_crvusd.mint_for_testing(m, random_amount)
+    crvusd.mint_for_testing(m, random_amount)
 
     with boa.env.prank(bribe_manager):
         m.set_gauge_cap(random_gauge, random_amount)
@@ -96,9 +96,9 @@ def test_post_bribe_expected(manager_mock_voting_market, mock_voting_market,
     with boa.env.prank(bribe_poster):
         m.post_bribe(random_gauge, random_amount, bytes())
 
-    assert mock_voting_market.received_amount() == random_amount
-    assert mock_voting_market.received_gauge() == random_gauge
-    assert mock_voting_market.received_data() == bytes()
+    assert generic_voting_market.received_amount() == random_amount
+    assert generic_voting_market.received_gauge() == random_gauge
+    assert generic_voting_market.received_data() == bytes()
 
 
 def test_post_bribe_unauthorized(manager):
@@ -107,8 +107,8 @@ def test_post_bribe_unauthorized(manager):
 
 
 @pytest.mark.parametrize("random_amount", list(range(0, 10 ** 23 + 1, 10**22)))
-def test_post_bribe_more_than_cap(manager_mock_voting_market, bribe_manager, bribe_poster, random_amount):
-    m = manager_mock_voting_market
+def test_post_bribe_more_than_cap(manager_with_voting_market, bribe_manager, bribe_poster, random_amount):
+    m = manager_with_voting_market
 
     random_gauge = boa.env.generate_address()
 
@@ -119,12 +119,13 @@ def test_post_bribe_more_than_cap(manager_mock_voting_market, bribe_manager, bri
         with boa.env.prank(bribe_poster):
             m.post_bribe(random_gauge, random_amount + 1, bytes())
 
-def test_post_bribe_funds_not_fully_spent(manager_mock_voting_market, mock_crvusd, bribe_manager, bribe_poster, mock_voting_market):
-    m = manager_mock_voting_market
+def test_post_bribe_funds_not_fully_spent(manager_with_voting_market, crvusd, bribe_manager, bribe_poster,
+                                          generic_voting_market):
+    m = manager_with_voting_market
 
     random_gauge = boa.env.generate_address()
     random_amount = 100
-    mock_crvusd.mint_for_testing(m, random_amount)
+    crvusd.mint_for_testing(m, random_amount)
 
     with boa.env.prank(bribe_manager):
         m.set_gauge_cap(random_gauge, random_amount)
@@ -158,14 +159,14 @@ def test_recover_erc20_managed_asset_recovery(manager, token_rescuer):
 
 
 
-def test_emergency_migration_expected(manager, mock_crvusd, emergency_admin):
-    mock_crvusd.mint_for_testing(manager, 100)
+def test_emergency_migration_expected(manager, crvusd, emergency_admin):
+    crvusd.mint_for_testing(manager, 100)
 
     with boa.env.prank(emergency_admin):
         manager.emergency_migration(rescuer := boa.env.generate_address())
 
-    assert mock_crvusd.balanceOf(manager) == 0
-    assert mock_crvusd.balanceOf(rescuer) == 100
+    assert crvusd.balanceOf(manager) == 0
+    assert crvusd.balanceOf(rescuer) == 100
 
 
 def test_emergency_migration_unauthorized(manager):

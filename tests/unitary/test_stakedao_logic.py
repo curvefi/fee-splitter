@@ -2,42 +2,43 @@ import boa
 from contracts.markets import StakeDaoLogic
 
 
-def test_constructor(stakedao_logic, mock_crvusd, mock_stakedao_market,
+def test_constructor(stakedao_logic, crvusd, stakedao_market,
                      manager):
-    assert stakedao_logic.crvusd() == mock_crvusd.address
-    assert stakedao_logic.votemarket() == mock_stakedao_market.address
+    assert stakedao_logic.crvusd() == crvusd.address
+    assert stakedao_logic.votemarket() == stakedao_market.address
     assert stakedao_logic.owner() == manager.address
 
 
-def test_constructor_zeroaddr(mock_crvusd, mock_stakedao_market, manager):
+def test_constructor_zeroaddr(crvusd, stakedao_market,
+                              manager):
     zero = boa.eval("empty(address)")
 
     with boa.reverts("zeroaddr: crvusd"):
-        StakeDaoLogic(zero, mock_stakedao_market, manager)
+        StakeDaoLogic(zero, stakedao_market, manager)
     with boa.reverts("zeroaddr: votemarket"):
-        StakeDaoLogic(mock_crvusd, zero, manager)
+        StakeDaoLogic(crvusd, zero, manager)
     with boa.reverts("zeroaddr: incentives_manager"):
-        StakeDaoLogic(mock_crvusd, mock_stakedao_market, zero)
+        StakeDaoLogic(crvusd, stakedao_market, zero)
 
 
-def test_create_bounty(stakedao_logic, mock_stakedao_market, mock_crvusd):
+def test_create_bounty(stakedao_logic, stakedao_market, crvusd):
     stakedao_logic.internal.create_bounty(
         gauge := boa.env.generate_address(),
         400,
         1234
     )
 
-    assert mock_stakedao_market.creation_gauge() == gauge
-    assert mock_stakedao_market.creation_manager() == stakedao_logic.address
-    assert mock_stakedao_market.creation_rewardToken() == mock_crvusd.address
-    assert mock_stakedao_market.creation_numberOfPeriods() == 2
-    assert mock_stakedao_market.creation_maxRewardPerVote() == 1234
-    assert mock_stakedao_market.creation_totalRewardAmount() == 400
-    assert mock_stakedao_market.eval("len(self.creation_blacklist)") == 0
-    assert mock_stakedao_market.creation_upgradeable() == False
+    assert stakedao_market.creation_gauge() == gauge
+    assert stakedao_market.creation_manager() == stakedao_logic.address
+    assert stakedao_market.creation_rewardToken() == crvusd.address
+    assert stakedao_market.creation_numberOfPeriods() == 2
+    assert stakedao_market.creation_maxRewardPerVote() == 1234
+    assert stakedao_market.creation_totalRewardAmount() == 400
+    assert stakedao_market.eval("len(self.creation_blacklist)") == 0
+    assert stakedao_market.creation_upgradeable() == False
 
 
-def test_increase_bounty_duration(stakedao_logic, mock_stakedao_market):
+def test_increase_bounty_duration(stakedao_logic, stakedao_market):
     gauge = boa.env.generate_address()
     random_id = 43958
     stakedao_logic.eval(f"self.bounty_id[{gauge}] = {random_id}")
@@ -47,13 +48,14 @@ def test_increase_bounty_duration(stakedao_logic, mock_stakedao_market):
         1234
     )
 
-    assert mock_stakedao_market.increase_bountyId() == random_id
-    assert mock_stakedao_market.increase_additionalPeriods() == 2
-    assert mock_stakedao_market.increase_increasedAmount() == 400
-    assert mock_stakedao_market.increase_newMaxPricePerVote() == 1234
+    assert stakedao_market.increase_bountyId() == random_id
+    assert stakedao_market.increase_additionalPeriods() == 2
+    assert stakedao_market.increase_increasedAmount() == 400
+    assert stakedao_market.increase_newMaxPricePerVote() == 1234
 
 
-def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
+def test_bribe(stakedao_logic, stakedao_market, crvusd,
+               manager):
     encoder_source = """
     @external
     def encode(max_amount_per_vote: uint256) -> Bytes[32]:
@@ -68,7 +70,7 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
 
     leftover_crvusd = 10 ** 18
 
-    mock_crvusd.mint_for_testing(stakedao_logic, leftover_crvusd)
+    crvusd.mint_for_testing(stakedao_logic, leftover_crvusd)
 
     assert stakedao_logic.bounty_id(random_gauge) == 0
 
@@ -83,32 +85,32 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
 
     stakedao_logic.eval(f"self.bounty_id[{random_gauge}] = {random_id}")
 
-    assert mock_stakedao_market.creation_gauge() == random_gauge
-    assert mock_stakedao_market.creation_manager() == stakedao_logic.address
-    assert mock_stakedao_market.creation_rewardToken() == mock_crvusd.address
-    assert mock_stakedao_market.creation_numberOfPeriods() == 2
-    assert (mock_stakedao_market.creation_maxRewardPerVote() ==
+    assert stakedao_market.creation_gauge() == random_gauge
+    assert stakedao_market.creation_manager() == stakedao_logic.address
+    assert stakedao_market.creation_rewardToken() == crvusd.address
+    assert stakedao_market.creation_numberOfPeriods() == 2
+    assert (stakedao_market.creation_maxRewardPerVote() ==
             max_amount_per_vote)
-    assert mock_stakedao_market.creation_totalRewardAmount() == 400
-    assert mock_stakedao_market.eval("len(self.creation_blacklist)") == 0
-    assert mock_stakedao_market.creation_upgradeable() == False
+    assert stakedao_market.creation_totalRewardAmount() == 400
+    assert stakedao_market.eval("len(self.creation_blacklist)") == 0
+    assert stakedao_market.creation_upgradeable() == False
 
     # this part should be uninitialized after the first call
-    assert mock_stakedao_market.increase_bountyId() == 0
-    assert mock_stakedao_market.increase_additionalPeriods() == 0
-    assert mock_stakedao_market.increase_increasedAmount() == 0
-    assert mock_stakedao_market.increase_newMaxPricePerVote() == 0
+    assert stakedao_market.increase_bountyId() == 0
+    assert stakedao_market.increase_additionalPeriods() == 0
+    assert stakedao_market.increase_increasedAmount() == 0
+    assert stakedao_market.increase_newMaxPricePerVote() == 0
 
     # cleaning dust
-    assert mock_crvusd.balanceOf(stakedao_logic.address) == 0
-    assert mock_crvusd.balanceOf(manager.address) == leftover_crvusd
+    assert crvusd.balanceOf(stakedao_logic.address) == 0
+    assert crvusd.balanceOf(manager.address) == leftover_crvusd
 
     # we test for a second call because this time the bounty already exists
     increase_max_amount_per_vote = 54321
     increase_amount = 401
     encoded_increase_max_amount_per_vote = encoder.encode(
         increase_max_amount_per_vote)
-    mock_crvusd.mint_for_testing(stakedao_logic, leftover_crvusd)
+    crvusd.mint_for_testing(stakedao_logic, leftover_crvusd)
 
     with boa.env.prank(manager.address):
         stakedao_logic.bribe(
@@ -117,15 +119,15 @@ def test_bribe(stakedao_logic, mock_stakedao_market, mock_crvusd, manager):
             bytes(encoded_increase_max_amount_per_vote)
         )
 
-    assert mock_stakedao_market.increase_bountyId() == random_id
-    assert mock_stakedao_market.increase_additionalPeriods() == 2
-    assert mock_stakedao_market.increase_increasedAmount() == increase_amount
-    assert (mock_stakedao_market.increase_newMaxPricePerVote() ==
+    assert stakedao_market.increase_bountyId() == random_id
+    assert stakedao_market.increase_additionalPeriods() == 2
+    assert stakedao_market.increase_increasedAmount() == increase_amount
+    assert (stakedao_market.increase_newMaxPricePerVote() ==
             increase_max_amount_per_vote)
 
     # cleaning dust
-    assert mock_crvusd.balanceOf(stakedao_logic.address) == 0
-    assert mock_crvusd.balanceOf(manager.address) == leftover_crvusd * 2
+    assert crvusd.balanceOf(stakedao_logic.address) == 0
+    assert crvusd.balanceOf(manager.address) == leftover_crvusd * 2
 
     # this was manually overriden in the test through eval
     assert stakedao_logic.bounty_id(random_gauge) == random_id # from mock
