@@ -33,7 +33,7 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     max_amount_per_vote: uint256 = abi_decode(data, (uint256))
     # TODO is it safe to assume that bounty_id will never be 0?
     if self.bounty_id[gauge] == 0:
-        self.create_bounty(gauge, amount, max_amount_per_vote)
+        self.bounty_id[gauge] = self.create_bounty(gauge, amount, max_amount_per_vote)
     else:
         self.increase_bounty_duration(gauge, amount, max_amount_per_vote)
 
@@ -42,8 +42,8 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
         extcall self.crvusd.transfer(msg.sender, leftovers)
 
 
-def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256):
-    extcall self.votemarket.createBounty(
+def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256) -> uint256:
+    return extcall self.votemarket.createBounty(
         gauge,
         self, # this is the manager contract
         self.crvusd.address, # we only bribe in crvusd
