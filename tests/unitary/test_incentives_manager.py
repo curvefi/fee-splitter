@@ -48,12 +48,10 @@ def test_set_gauge_cap_expected(manager, bribe_manager):
     assert m.gauge_caps(random_gauge) == 100
 
 
-@pytest.mark.xfail()
 def test_update_gauge_cap_unauthorized(manager, bribe_manager):
     m = manager
     random_gauge = boa.env.generate_address()
 
-    # TODO why does this fail?
     with boa.reverts("access_control: account is missing role"):
         m.set_gauge_cap(random_gauge, 10 ** 24)
 
@@ -76,12 +74,10 @@ def test_set_bribe_logic_expected(manager, bribe_manager):
     assert m._storage.bribe_logic.get() == random_logic
 
 
-@pytest.mark.xfail()
 def test_set_bribe_logic_unauthorized(manager, bribe_poster):
     m = manager
     random_logic = boa.env.generate_address()
 
-    # TODO why does this fail?
     with boa.reverts("access_control: account is missing role"):
         m.set_bribe_logic(random_logic)
 
@@ -105,9 +101,7 @@ def test_post_bribe_expected(manager_mock_voting_market, mock_voting_market,
     assert mock_voting_market.received_data() == bytes()
 
 
-@pytest.mark.xfail()
 def test_post_bribe_unauthorized(manager):
-    # TODO why does this fail?
     with boa.reverts("access_control: account is missing role"):
         manager.post_bribe(1234, boa.env.generate_address(), bytes())
 
@@ -151,9 +145,7 @@ def test_recover_erc20_expected(manager, token_rescuer):
     assert random_token.balanceOf(manager) == 0
 
 
-@pytest.mark.xfail()
 def test_recover_erc20_unauthorized(manager):
-    # TODO why does this fail?
     with boa.reverts("access_control: account is missing role"):
         manager.recover_erc20(boa.env.generate_address(),
                               boa.env.generate_address())
@@ -176,8 +168,6 @@ def test_emergency_migration_expected(manager, mock_crvusd, emergency_admin):
     assert mock_crvusd.balanceOf(rescuer) == 100
 
 
-@pytest.mark.xfail()
 def test_emergency_migration_unauthorized(manager):
-    # TODO why does this fail?
     with boa.reverts("access_control: account is missing role"):
         manager.emergency_migration(boa.env.generate_address())
