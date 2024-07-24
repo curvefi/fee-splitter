@@ -83,7 +83,7 @@ def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256)
         max_reward_per_vote,
         amount,
         empty(DynArray[address, 1]),
-        False
+        True
     )
 
 def increase_bounty_duration(gauge: address, amount: uint256, max_price_per_vote: uint256):
