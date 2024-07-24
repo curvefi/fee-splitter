@@ -3,15 +3,13 @@ from contracts.markets import StakeDaoLogic
 from eth_abi import encode
 
 
-def test_constructor(stakedao_logic, crvusd, stakedao_market,
-                     manager):
+def test_constructor(stakedao_logic, crvusd, stakedao_market, manager):
     assert stakedao_logic.crvusd() == crvusd.address
     assert stakedao_logic.votemarket() == stakedao_market.address
     assert stakedao_logic.owner() == manager.address
 
 
-def test_constructor_zeroaddr(crvusd, stakedao_market,
-                              manager):
+def test_constructor_zeroaddr(crvusd, stakedao_market, manager):
     zero = boa.eval("empty(address)")
 
     with boa.reverts("zeroaddr: crvusd"):
@@ -36,7 +34,7 @@ def test_create_bounty(stakedao_logic, stakedao_market, crvusd):
     assert stakedao_market.creation_maxRewardPerVote() == 1234
     assert stakedao_market.creation_totalRewardAmount() == 400
     assert stakedao_market.eval("len(self.creation_blacklist)") == 0
-    assert stakedao_market.creation_upgradeable() == False
+    assert stakedao_market.creation_upgradeable() == True
 
 
 def test_increase_bounty_duration(stakedao_logic, stakedao_market):
@@ -86,7 +84,7 @@ def test_bribe(stakedao_logic, stakedao_market, crvusd, manager):
     assert (stakedao_market.creation_maxRewardPerVote() == max_amount_per_vote)
     assert stakedao_market.creation_totalRewardAmount() == 400
     assert stakedao_market.eval("len(self.creation_blacklist)") == 0
-    assert stakedao_market.creation_upgradeable() == False
+    assert stakedao_market.creation_upgradeable() == True
 
     # this part should be uninitialized after the first call
     assert stakedao_market.increase_bountyId() == 0
