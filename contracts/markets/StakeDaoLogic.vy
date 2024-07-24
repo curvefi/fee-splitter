@@ -55,15 +55,18 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     """
     @notice Posts a bribe on StakeDAO's Votemarket
     @dev The data payload is expected to contain the maximum amount
-        of CRVUSD that can be distributed per vote.
+        of crvUSD that can be distributed per vote.
     @dev The first bribe will create a new bounty, subsequent bribes
         will increase the duration of the existing bounties allowing
         rewards to be rolled over (if not claimed).
+    @dev If the `bounty_id` returned by `create_bounty` is 0 the
+        successive bounty for that id will be recreated instead of
+        being increased. This contract assumes that the `bounty_id`
+        will never be 0.
     """
     ownable._check_owner()
 
     max_amount_per_vote: uint256 = abi_decode(data, (uint256))
-    # TODO is it safe to assume that bounty_id will never be 0?
     if self.bounty_id[gauge] == 0:
         self.bounty_id[gauge] = self.create_bounty(gauge, amount, max_amount_per_vote)
     else:
