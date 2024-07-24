@@ -2,18 +2,22 @@
 def createBounty(
     gauge: address,
     manager: address,
-    rewardToken: address,
-    numberOfPeriods: uint8,
-    maxRewardPerVote: uint256,
-    totalRewardAmount: uint256,
+    reward_token: address,
+    number_of_periods: uint8,
+    max_reward_per_vote: uint256,
+    total_reward_amount: uint256,
     blacklist: DynArray[address, 100],
     upgradeable: bool) -> uint256:
     ...
 
 @external
 def increaseBountyDuration(
-        _bountyId: uint256,
-        _additionnalPeriods: uint256,
-        _increasedAmount: uint256,
-        _newMaxPricePerVote: uint256):
+        bounty_id: uint256,
+        additionnal_periods: uint256,
+        increased_amount: uint256,
+        new_max_price_per_vote: uint256):
+    ...
+
+@external
+def closeBounty(bounty_id: uint256):
     ...

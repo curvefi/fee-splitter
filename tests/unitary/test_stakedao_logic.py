@@ -126,3 +126,12 @@ def test_bribe(stakedao_logic, stakedao_market, crvusd, manager):
 def test_bribe_unauthorized(stakedao_logic):
     with boa.reverts("ownable: caller is not the owner"):
         stakedao_logic.bribe(boa.env.generate_address(), 400, bytes())
+
+def test_close_bounty(stakedao_logic, stakedao_market, token_rescuer):
+    with boa.env.prank(token_rescuer):
+        stakedao_logic.close_bounty(7890)
+    assert stakedao_market.close_id() == 7890
+
+def test_close_bounty_unauthorized(stakedao_logic):
+    with boa.reverts("access_control: account is missing role"):
+        stakedao_logic.close_bounty(7890)

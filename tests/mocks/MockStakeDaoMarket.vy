@@ -16,6 +16,8 @@ increase_additionalPeriods: public(uint256)
 increase_increasedAmount: public(uint256)
 increase_newMaxPricePerVote: public(uint256)
 
+close_id: public(uint256)
+
 
 @external
 def createBounty(
@@ -47,4 +49,9 @@ def increaseBountyDuration(
     self.increase_additionalPeriods = _additionalPeriods
     self.increase_increasedAmount = _increasedAmount
     self.increase_newMaxPricePerVote = _newMaxPricePerVote
+
+@external
+def closeBounty(bountyId: uint256):
+    self.close_id = bountyId
+
 

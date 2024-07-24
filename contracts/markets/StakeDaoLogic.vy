@@ -20,6 +20,12 @@ from contracts.manual import IBribeLogic
 import StakeDaoMarket as Votemarket
 from ethereum.ercs import IERC20
 
+# TODO make this cleaner
+interface IncentivesManager:
+    def hasRole(role: bytes32, account: address) -> bool: view
+    def TOKEN_RESCUER() -> bytes32: view
+
+
 implements: IBribeLogic
 initializes: ownable
 exports: ownable.__interface__
@@ -27,7 +33,9 @@ exports: ownable.__interface__
 votemarket: public(Votemarket)
 crvusd: public(IERC20)
 bounty_id: public(HashMap[address, uint256])
+
 BRIBE_DURATION: constant(uint256) = 2 # bi-weekly
+TOKEN_RESCUER: constant(bytes32) = keccak256("TOKEN_RESCUER")
 
 # TODO add recovery mechanism
 
@@ -75,6 +83,22 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     leftovers: uint256 = staticcall self.crvusd.balanceOf(self)
     if leftovers > 0:
         extcall self.crvusd.transfer(msg.sender, leftovers)
+
+@external
+def close_bounty(bounty_id: uint256):
+    """
+    @notice Recovers unspent funds from a bounty in case of a migration
+    to a different market.
+    @dev Recovered funds are sent to the manager of the bounty, which is
+    the IncentivesManager contract in this instance. From there the funds
+    can be recovered using the migraion function.
+    @param bounty_id The id of the bounty from which the funds will be
+        recovered.
+    """
+    manager: IncentivesManager = IncentivesManager(ownable.owner)
+    # TODO multiline assert reason
+    assert staticcall manager.hasRole(TOKEN_RESCUER, msg.sender), "access_control: account is missing role"
+    extcall self.votemarket.closeBounty(bounty_id)
 
 
 def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256) -> uint256:
