@@ -13,7 +13,7 @@ def createBounty(
 @external
 def increaseBountyDuration(
         bounty_id: uint256,
-        additionnal_periods: uint256,
+        additionnal_periods: uint8,
         increased_amount: uint256,
         new_max_price_per_vote: uint256):
     ...
