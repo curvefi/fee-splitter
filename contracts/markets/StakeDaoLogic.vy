@@ -34,7 +34,7 @@ votemarket: public(Votemarket)
 crvusd: public(IERC20)
 bounty_id: public(HashMap[address, uint256])
 
-BRIBE_DURATION: constant(uint256) = 2 # bi-weekly
+BRIBE_DURATION: constant(uint8) = 2 # bi-weekly
 TOKEN_RESCUER: constant(bytes32) = keccak256("TOKEN_RESCUER")
 
 # TODO add recovery mechanism
@@ -106,7 +106,7 @@ def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256)
         gauge,
         self, # this is the manager contract
         self.crvusd.address, # we only bribe in crvusd
-        convert(BRIBE_DURATION, uint8), # we bribe at a bi-weekly frequency
+        BRIBE_DURATION, # we bribe at a bi-weekly frequency
         max_reward_per_vote,
         amount,
         empty(DynArray[address, 1]),
