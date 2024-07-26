@@ -102,6 +102,7 @@ def close_bounty(bounty_id: uint256):
 
 
 def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256) -> uint256:
+    extcall self.crvusd.approve(self.votemarket.address, amount)
     return extcall self.votemarket.createBounty(
         gauge,
         self, # this is the manager contract
@@ -114,6 +115,7 @@ def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256)
     )
 
 def increase_bounty_duration(gauge: address, amount: uint256, max_price_per_vote: uint256):
+    extcall self.crvusd.approve(self.votemarket.address, amount)
     bounty_id: uint256 = self.bounty_id[gauge]
     extcall self.votemarket.increaseBountyDuration(
         bounty_id,
