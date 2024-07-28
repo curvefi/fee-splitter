@@ -1,4 +1,4 @@
-# pragma version 0.4.1
+# pragma version ~=0.4.0
 
 import LPNClient
 import LPNRegistry
