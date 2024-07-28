@@ -5,8 +5,9 @@ test = "tests/integration"
 libs = ["lib", ".venv/lib/python3.12/site-packages"]
 
 [vyper]
-# TODO replace with env so that it's not hardcoded
-path = "/Users/albe/.pyenv/shims/vyper"
+# You need vyper to be in your PATH environment
+# variable for this to work
+path = "vyper"
 
 
 
