@@ -8,11 +8,12 @@ import {ICrvUSD} from "./ICrvUSD.sol";
 interface IIncentivesManager {
     function set_bribe_logic(address logic) external;
     function set_gauge_cap(address gauge, uint256 cap) external;
-    function post_bribe(address gauge, uint256 amount, bytes calldata data) external;
+    function post_bribe(address gauge, uint256 amount, bytes calldata data) external returns (uint256);
 }
 
 interface IStakeDaoLogic {
     function bribe(address gauge, uint256 amount, bytes memory data) external;
+    function close_bounty(uint256 id, address receiver) external;
 }
 
 contract IntegrationTest is Test {

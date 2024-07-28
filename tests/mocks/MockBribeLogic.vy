@@ -17,7 +17,7 @@ def __init__(token: address, manager: address):
     self.manager = manager
 
 @external
-def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
+def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
     self.received_amount = amount
     self.received_gauge = gauge
     self.received_data = data
@@ -28,3 +28,5 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     # a non-empty data payload
     if data == empty(Bytes[1024]):
         extcall self.token.transfer(self.manager, balance)
+
+    return 564839

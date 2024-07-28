@@ -38,14 +38,11 @@ def test_create_bounty(stakedao_logic, stakedao_market, crvusd):
 
 
 def test_increase_bounty_duration(stakedao_logic, stakedao_market):
-    gauge = boa.env.generate_address()
     random_id = 43958
-    stakedao_logic.eval(f"self.bounty_id[{gauge}] = {random_id}")
     stakedao_logic.internal.increase_bounty_duration(
-        gauge,
+        random_id,
         400,
-        1234
-    )
+        1234)
 
     assert stakedao_market.increase_bountyId() == random_id
     assert stakedao_market.increase_additionalPeriods() == 2
@@ -127,9 +124,17 @@ def test_bribe_unauthorized(stakedao_logic):
     with boa.reverts("ownable: caller is not the owner"):
         stakedao_logic.bribe(boa.env.generate_address(), 400, bytes())
 
-def test_close_bounty(stakedao_logic, stakedao_market, token_rescuer):
+def test_close_bounty(stakedao_logic, stakedao_market, token_rescuer, crvusd):
+    crvusd.mint_for_testing(stakedao_logic, 1000)
     with boa.env.prank(token_rescuer):
-        stakedao_logic.close_bounty(7890)
+        stakedao_logic.close_bounty(7890, recovery_addr := boa.env.generate_address())
+    assert crvusd.balanceOf(recovery_addr) == 1000
+    assert stakedao_market.close_id() == 7890
+
+def test_close_bounty_no_funds(stakedao_logic, stakedao_market, token_rescuer):
+    with boa.env.prank(token_rescuer):
+        with boa.reverts("manager: no unclaimed funds to recover"):
+            stakedao_logic.close_bounty(7890, boa.env.generate_address())
     assert stakedao_market.close_id() == 7890
 
 def test_close_bounty_unauthorized(stakedao_logic):
