@@ -135,8 +135,7 @@ def test_close_bounty_no_funds(stakedao_logic, stakedao_market, token_rescuer):
     with boa.env.prank(token_rescuer):
         with boa.reverts("manager: no unclaimed funds to recover"):
             stakedao_logic.close_bounty(7890, boa.env.generate_address())
-    assert stakedao_market.close_id() == 7890
 
 def test_close_bounty_unauthorized(stakedao_logic):
     with boa.reverts("access_control: account is missing role"):
-        stakedao_logic.close_bounty(7890)
+        stakedao_logic.close_bounty(7890, boa.env.generate_address())
