@@ -1554,7 +1554,7 @@ files = [
 
 [[package]]
 name = "titanoboa"
-version = "0.2.0"
+version = "0.1.10b1"
 description = "A Vyper interpreter"
 optional = false
 python-versions = "*"
@@ -1577,14 +1577,13 @@ vyper = ">=0.4.0"
 
 [package.extras]
 colab = ["ipykernel (>=6.29.4)"]
-etherscan-caching = ["requests-cache (>=1.2.1)"]
-forking-recommended = ["ujson (>=5.10.0)"]
+forking-recommended = ["ujson"]
 
 [package.source]
 type = "git"
 url = "https://github.com/DanielSchiavini/titanoboa.git"
-reference = "feat/call-trace"
-resolved_reference = "31b4fa37d43ec1a303157e99ce6cfda7ecf9d541"
+reference = "revert-in-lib"
+resolved_reference = "24a5c05313460d10b78bee3eb5720a73e2fb9adb"
 
 [[package]]
 name = "toolz"
@@ -1704,4 +1703,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.4"
-content-hash = "ccc3ff2812757565ac1a6874feab5696568ea47834c2ed532b43c38b9683c93b"
+content-hash = "98c93b08b601423a0fc572f186a7b0fe68a5aed3709f8a9f44f6855d5b23f1ac"
