@@ -31,6 +31,8 @@ implements: IBribeLogic
 initializes: ownable
 exports: ownable.__interface__
 
+version: public(constant(String[8])) = "0.1.0" # (no guarantees on ABI stability)
+
 votemarket: public(Votemarket)
 crvusd: public(IERC20)
 bounty_id: public(HashMap[address, uint256])
@@ -58,7 +60,7 @@ def __init__(crvusd: address, votemarket: address, incentives_manager: address):
 
 
 @external
-def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
+def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
     """
     @notice Posts a bribe on StakeDAO's Votemarket
     @dev The data payload is expected to contain the maximum amount
@@ -70,21 +72,28 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
         successive bounty for that id will be recreated instead of
         being increased. This contract assumes that the `bounty_id`
         will never be 0.
+    @return The id of the bounty created or increased
     """
     ownable._check_owner()
 
+    bounty_id: uint256 = 0
+
     max_amount_per_vote: uint256 = abi_decode(data, (uint256))
     if self.bounty_id[gauge] == 0:
-        self.bounty_id[gauge] = self.create_bounty(gauge, amount, max_amount_per_vote)
+        bounty_id = self.create_bounty(gauge, amount, max_amount_per_vote)
+        self.bounty_id[gauge] = bounty_id
     else:
-        self.increase_bounty_duration(gauge, amount, max_amount_per_vote)
+        bounty_id = self.bounty_id[gauge]
+        self.increase_bounty_duration(bounty_id, amount, max_amount_per_vote)
 
     leftovers: uint256 = staticcall self.crvusd.balanceOf(self)
     if leftovers > 0:
         extcall self.crvusd.transfer(msg.sender, leftovers)
 
+    return bounty_id
+
 @external
-def close_bounty(bounty_id: uint256):
+def close_bounty(bounty_id: uint256, receiver: address):
     """
     @notice Recovers unspent funds from a bounty in case of a migration
     to a different market.
@@ -97,6 +106,9 @@ def close_bounty(bounty_id: uint256):
     manager: IncentivesManager = IncentivesManager(ownable.owner)
     assert staticcall manager.hasRole(TOKEN_RESCUER, msg.sender), "access_control: account is missing role"
     extcall self.votemarket.closeBounty(bounty_id)
+    unclaimed_funds: uint256 = staticcall self.crvusd.balanceOf(self)
+    assert unclaimed_funds > 0, "manager: no unclaimed funds to recover"
+    extcall self.crvusd.transfer(receiver, unclaimed_funds)
 
 
 def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256) -> uint256:
@@ -112,9 +124,8 @@ def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256)
         True
     )
 
-def increase_bounty_duration(gauge: address, amount: uint256, max_price_per_vote: uint256):
+def increase_bounty_duration(bounty_id: uint256, amount: uint256, max_price_per_vote: uint256):
     extcall self.crvusd.approve(self.votemarket.address, amount)
-    bounty_id: uint256 = self.bounty_id[gauge]
     extcall self.votemarket.increaseBountyDuration(
         bounty_id,
         BRIBE_DURATION,

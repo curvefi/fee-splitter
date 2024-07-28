@@ -120,7 +120,7 @@ def set_bribe_logic(bribe_logic: address):
     log SetBribeLogic(bribe_logic)
 
 @external
-def post_bribe(gauge: address, amount: uint256, data: Bytes[1024]):
+def post_bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
     """
     @notice post a bribe using the `bribe_logic` contract.
     @dev This function temporarily approves the specified
@@ -128,15 +128,20 @@ def post_bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     @param amount The amount of incentives to be allocated for this bribe
     @param gauge The gauge for which the bounty is being posted.
     @param data Additional data that are relevant for the bounty.
+    @return The identifier of the bribe that was posted (this is
+        implementation specific and what it means is up to the
+        bribe logic contract).
     """
     access_control._check_role(BRIBE_POSTER, msg.sender)
 
     assert amount <= self.gauge_caps[gauge], "manager: bribe exceeds cap"
 
     extcall self.managed_asset.transfer(self.bribe_logic.address, amount)
-    extcall self.bribe_logic.bribe(gauge, amount, data)
+    id: uint256 = extcall self.bribe_logic.bribe(gauge, amount, data)
 
     assert staticcall self.managed_asset.balanceOf(self.bribe_logic.address) == 0, "manager: bribe not fully spent"
+
+    return id
 
 
 @external
