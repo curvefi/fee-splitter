@@ -12,7 +12,7 @@ creation_blacklist: public(DynArray[address, 100])
 creation_upgradeable: public(bool)
 
 increase_bountyId: public(uint256)
-increase_additionalPeriods: public(uint256)
+increase_additionalPeriods: public(uint8)
 increase_increasedAmount: public(uint256)
 increase_newMaxPricePerVote: public(uint256)
 
@@ -42,7 +42,7 @@ def createBounty(
 @external
 def increaseBountyDuration(
         _bountyId: uint256,
-        _additionalPeriods: uint256,
+        _additionalPeriods: uint8,
         _increasedAmount: uint256,
         _newMaxPricePerVote: uint256):
     self.increase_bountyId = _bountyId
