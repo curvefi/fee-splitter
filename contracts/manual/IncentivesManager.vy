@@ -115,8 +115,6 @@ def set_bribe_logic(bribe_logic: address):
     """
     access_control._check_role(BRIBE_MANAGER, msg.sender)
 
-    # TODO add interface support
-
     self.bribe_logic = IBribeLogic(bribe_logic)
 
     log SetBribeLogic(bribe_logic)
