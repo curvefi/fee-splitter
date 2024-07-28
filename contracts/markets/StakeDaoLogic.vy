@@ -20,7 +20,8 @@ from contracts.manual import IBribeLogic
 import StakeDaoMarket as Votemarket
 from ethereum.ercs import IERC20
 
-# TODO make this cleaner
+# Interfaces can't be imported from contracts
+# (should be fixed soon by the Vyper team)
 interface IncentivesManager:
     def hasRole(role: bytes32, account: address) -> bool: view
     def TOKEN_RESCUER() -> bytes32: view
@@ -36,8 +37,6 @@ bounty_id: public(HashMap[address, uint256])
 
 BRIBE_DURATION: constant(uint8) = 2 # bi-weekly
 TOKEN_RESCUER: constant(bytes32) = keccak256("TOKEN_RESCUER")
-
-# TODO add recovery mechanism
 
 @deploy
 def __init__(crvusd: address, votemarket: address, incentives_manager: address):
@@ -96,7 +95,6 @@ def close_bounty(bounty_id: uint256):
         recovered.
     """
     manager: IncentivesManager = IncentivesManager(ownable.owner)
-    # TODO multiline assert reason
     assert staticcall manager.hasRole(TOKEN_RESCUER, msg.sender), "access_control: account is missing role"
     extcall self.votemarket.closeBounty(bounty_id)
 

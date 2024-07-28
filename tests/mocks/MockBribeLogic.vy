@@ -28,16 +28,3 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     # a non-empty data payload
     if data == empty(Bytes[1024]):
         extcall self.token.transfer(self.manager, balance)
-
-@external
-@view
-def supportsInterface(interface_id: bytes4) -> bool:
-    """
-    @dev Returns `True` if this contract implements the
-         interface defined by `interface_id`.
-    @param interface_id The 4-byte interface identifier.
-    @return bool The verification whether the contract
-            implements the interface or not.
-    """
-    # TODO implement this
-    return True

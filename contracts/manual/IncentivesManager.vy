@@ -119,7 +119,6 @@ def set_bribe_logic(bribe_logic: address):
 
     log SetBribeLogic(bribe_logic)
 
-# TODO use constant from interface for size
 @external
 def post_bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     """

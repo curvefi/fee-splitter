@@ -15,11 +15,8 @@ contract StakeDaoLogicTest is IntegrationTest {
     function testFuzz_firstCall(uint256 bribeAmount, uint256 maxAmountPerVote) public {
         vm.assume(bribeAmount > 0 && bribeAmount < 1e22);
         vm.assume(maxAmountPerVote > 0);
-        // TODO test with all gauges that were released since crvUSD
-        // address crvusd_usde_gauge = 0x95f00391cB5EebCd190EB58728B4CE23DbFa6ac1;
         address gauge = gauges[bribeAmount % gauges.length];
 
-        // uint256 bribeAmount = 1000;
         vm.prank(bribeManager);
         im.set_gauge_cap(gauge, bribeAmount);
         
