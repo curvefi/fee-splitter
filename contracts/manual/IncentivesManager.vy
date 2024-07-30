@@ -27,6 +27,8 @@ initializes: access_control
 
 exports: access_control.__interface__
 
+version: public(constant(String[8])) = "0.1.0" # (no guarantees on ABI stability)
+
 event SetGaugeCap:
     gauge: address
     cap: uint256
@@ -37,7 +39,10 @@ event SetBribeLogic:
 event UpdateIncentivesState:
     locked: bool
 
-version: public(constant(String[8])) = "0.1.0" # (no guarantees on ABI stability)
+struct IncentivePayload:
+    gauge: address
+    amount: uint256
+    data: Bytes[MAX_DATA_SIZE]
 
 MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 10**23 # 100.000 tokens (crvUSD)
 MAX_BRIBES: constant(uint256) = 1000
@@ -134,32 +139,24 @@ def set_bribe_logic(bribe_logic: address):
     log SetBribeLogic(bribe_logic)
 
 @external
-def update_incentives_batch(
-    gauges: DynArray[address, MAX_BRIBES],
-    amounts: DynArray[uint256, MAX_BRIBES],
-    data: DynArray[Bytes[MAX_DATA_SIZE], MAX_BRIBES]
-):
+def update_incentives_batch(payloads: DynArray[IncentivePayload, MAX_BRIBES]):
     """
     @notice Update the incentives for the next round. After the
         incentives are set, the `confirm_batch` function must be
         called to lock the incentives and prepare the contract
         for the distribution.
-    @param gauges The list of gauges for which the incentives will be
-        posted.
-    @param amounts The amount of incentives to be posted for each gauge.
-    @param data The data to be passed to the bribe logic contract for
-    each gauge.
-
-
+    @param payloads The list of payload to be posted, containing
+        amounts, gauges and additional data (if any).
     """
     access_control._check_role(BRIBE_POSTER, msg.sender)
+    assert len(payloads) > 0, "manager: no incentives given"
 
     # empty the previous payloads
     self.pending_gauges = empty(DynArray[address, MAX_BRIBES])
     self.total_incentives = 0
 
-    for i: uint256 in range(len(gauges), bound=MAX_BRIBES):
-        self._update_incentive(gauges[i], amounts[i], data[i])
+    for i: IncentivePayload in payloads:
+        self._update_incentive(i.gauge, i.amount, i.data)
 
 
 def _update_incentive(gauge: address, amount: uint256, data: Bytes[MAX_DATA_SIZE]):
