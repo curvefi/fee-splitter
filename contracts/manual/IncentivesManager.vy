@@ -156,6 +156,7 @@ def update_incentives_batch(
 
     # empty the previous payloads
     self.pending_gauges = empty(DynArray[address, MAX_BRIBES])
+    self.total_incentives = 0
 
     for i: uint256 in range(len(gauges), bound=MAX_BRIBES):
         self._update_incentive(gauges[i], amounts[i], data[i])
