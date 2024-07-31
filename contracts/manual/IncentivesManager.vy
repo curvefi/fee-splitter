@@ -152,7 +152,7 @@ def update_incentives_batch(payloads: DynArray[IncentivePayload, MAX_BRIBES]):
     assert len(payloads) > 0, "manager: no incentives given"
 
     # empty the previous payloads
-    self.pending_gauges = empty(DynArray[address, MAX_BRIBES])
+    self.pending_gauges = []
     self.total_incentives = 0
 
     for i: IncentivePayload in payloads:
@@ -212,7 +212,7 @@ def post_incentives():
 
     self.incentives_locked = False
     self.total_incentives = 0
-    self.pending_gauges = empty(DynArray[address, MAX_BRIBES])
+    self.pending_gauges = []
 
 
 @external
