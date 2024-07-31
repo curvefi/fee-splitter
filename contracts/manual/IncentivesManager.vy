@@ -160,6 +160,8 @@ def update_incentives_batch(payloads: DynArray[IncentivePayload, MAX_BRIBES]):
 
 
 def _update_incentive(gauge: address, amount: uint256, data: Bytes[MAX_DATA_SIZE]):
+    assert amount > 0 and amount <= self.gauge_caps[gauge], "manager: invalid bribe amount"
+
     self.pending_gauges.append(gauge)
     self.total_incentives += amount
     self.amount_for_gauge[gauge] = amount
@@ -173,6 +175,7 @@ def confirm_batch():
         the contract for the distribution of the incentives.
     """
     access_control._check_role(BRIBE_POSTER, msg.sender)
+    assert len(self.pending_gauges) > 0, "manager: no incentives batched"
 
     self.incentives_locked = True
     
@@ -205,7 +208,6 @@ def post_incentives():
 
     for gauge: address in self.pending_gauges:
         amount: uint256 = self.amount_for_gauge[gauge]
-        assert amount <= self.gauge_caps[gauge], "manager: bribe exceeds cap"
         extcall self.bribe_logic.bribe(gauge, amount, self.data_for_gauge[gauge])
 
     assert staticcall managed_asset.balanceOf(self.bribe_logic.address) == 0, "manager: bribe not fully spent"
