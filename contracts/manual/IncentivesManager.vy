@@ -68,7 +68,7 @@ incentives_locked: public(bool)
 
 
 @deploy
-def __init__(_managed_asset: address, bribe_manager: address, bribe_poster: address, token_rescuer: address, emergency_admin: address):
+def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_poster: address, token_rescuer: address, emergency_admin: address):
     """
     @dev After this function is called ownership of the contract is
         renounced making it impossible.
