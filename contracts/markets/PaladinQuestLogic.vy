@@ -86,12 +86,13 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
     ownable._check_owner()
 
     quest_id: uint256 = 0
+    total_budget: uint256 = amount
 
     withdrawn: uint256 = self.withdraw_expired_quest(self.quest_id[gauge])
     if withdrawn > 0:
-        amount += withdrawn
+        total_budget += withdrawn
 
-    quest_id = self.create_quest(gauge, amount, max_amount_per_vote)
+    quest_id = self.create_quest(gauge, total_budget, self.min_reward_per_vote, self.max_reward_per_vote)
     self.quest_id[gauge] = quest_id
 
     leftovers: uint256 = staticcall self.crvusd.balanceOf(self)
@@ -130,15 +131,15 @@ def create_quest(
     fee_ratio: uint256 = staticcall self.quest_board.customPlatformFeeRatio(self)
     if fee_ratio == 0:
         fee_ratio = QUEST_DEFAULT_FEE_RATIO
-    amount: uint256 = (amount * MAX_BPS) / (MAX_BPS + fee_ratio)
-    fee_amount: uint256 = (amount * fee_ratio) / MAX_BPS
+    total_budget: uint256 = (amount * MAX_BPS) // (MAX_BPS + fee_ratio)
+    fee_amount: uint256 = (total_budget * fee_ratio) // MAX_BPS
 
     # prepare the blacklist array
-    vote_type: uint256 = 0
-    blacklist: DynArray[address, voter_blacklist_length]
-    if(voter_blacklist_length > 0):
+    vote_type: uint8 = 0
+    blacklist: DynArray[address, 10] = []
+    if(self.voter_blacklist_length > 0):
         vote_type = 1
-    for i in range(voter_blacklist_length):
+    for i: uint256 in range(10):
         if(self.voter_blacklist[i] == empty(address)):
             break
         blacklist.append(self.voter_blacklist[i])
@@ -147,10 +148,10 @@ def create_quest(
         gauge,
         self.crvusd.address, # we only bribe in crvusd
         False, # start the Quest now
-        BRIBE_DURATION, # we bribe at a bi-weekly frequency
+        convert(BRIBE_DURATION, uint48), # we bribe at a bi-weekly frequency
         min_amount_per_vote,
         max_amount_per_vote,
-        amount,
+        total_budget,
         fee_amount,
         vote_type, # blacklist, or normal
         1, # rollover
@@ -160,7 +161,7 @@ def create_quest(
 
 def withdraw_expired_quest(quest_id: uint256) -> uint256:
     withdrawable: uint256 = staticcall self.quest_board.questWithdrawableAmount(quest_id)
-    if(amount == 0):
+    if(withdrawable == 0):
         return 0
     extcall self.quest_board.withdrawUnusedRewards(quest_id, self)
     return withdrawable
@@ -187,12 +188,12 @@ def set_voter_blacklsit(new_list: DynArray[address, 10]):
     """
     @notice Sets the voter blacklist
     @dev The blacklist is used to prevent certain addresses from receiving bribes
-    @param list The list of addresses to be blacklisted
+    @param new_list The list of addresses to be blacklisted
     """
     manager: IncentivesManager = IncentivesManager(ownable.owner)
     assert staticcall manager.hasRole(BRIBE_POSTER, msg.sender), "access_control: account is missing role"
     self.voter_blacklist_length = len(new_list)
-    for i in range(len(new_list)):
+    for i: uint256 in range(10):
         if(new_list[i] == empty(address)):
             break
         self.voter_blacklist[i] = new_list[i]
