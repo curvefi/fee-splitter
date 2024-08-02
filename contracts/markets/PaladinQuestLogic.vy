@@ -63,6 +63,7 @@ def __init__(crvusd: address, quest_board: address, incentives_manager: address,
     assert incentives_manager != empty(address), "zeroaddr: incentives_manager"
     assert min_amount_per_vote > 0, "zero: min_amount_per_vote"
     assert max_amount_per_vote > 0, "zero: max_amount_per_vote"
+    assert min_amount_per_vote < max_amount_per_vote, "invalid: min_amount_per_vote > max_amount_per_vote"
 
     ownable.__init__()
     ownable._transfer_ownership(incentives_manager)
@@ -175,6 +176,9 @@ def update_rewards_per_vote_range(new_min: uint256, new_max: uint256):
     """
     manager: IncentivesManager = IncentivesManager(ownable.owner)
     assert staticcall manager.hasRole(BRIBE_POSTER, msg.sender), "access_control: account is missing role"
+    assert new_min > 0, "zero: new_min"
+    assert new_max > 0, "zero: new_max"
+    assert new_min < new_max, "invalid: new_min > new_max"
     self.min_reward_per_vote = new_min
     self.max_reward_per_vote = new_max
 
