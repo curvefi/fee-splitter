@@ -184,7 +184,7 @@ def update_rewards_per_vote_range(new_min: uint256, new_max: uint256):
     self.max_reward_per_vote = new_max
 
 @external
-def set_voter_blacklsit(new_list: DynArray[address, 10]):
+def set_voter_blacklist(new_list: DynArray[address, 10]):
     """
     @notice Sets the voter blacklist
     @dev The blacklist is used to prevent certain addresses from receiving bribes
@@ -192,8 +192,16 @@ def set_voter_blacklsit(new_list: DynArray[address, 10]):
     """
     manager: IncentivesManager = IncentivesManager(ownable.owner)
     assert staticcall manager.hasRole(BRIBE_POSTER, msg.sender), "access_control: account is missing role"
-    self.voter_blacklist_length = len(new_list)
+    new_list_len: uint256 = 0
+    # clear the blacklist
     for i: uint256 in range(10):
-        if(new_list[i] == empty(address)):
+        self.voter_blacklist[i] = empty(address)
+    # set the new blacklist
+    for j: uint256 in range(10):
+        if(new_list[j] == empty(address)):
             break
-        self.voter_blacklist[i] = new_list[i]
+        new_list_len += 1
+        self.voter_blacklist[j] = new_list[j]
+        if(j == len(new_list) - 1):
+            break
+    self.voter_blacklist_length = new_list_len

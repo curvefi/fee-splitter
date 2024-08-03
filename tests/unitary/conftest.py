@@ -33,6 +33,16 @@ def stakedao_logic(crvusd, stakedao_market, manager):
     from contracts.markets import StakeDaoLogic
     return StakeDaoLogic(crvusd, stakedao_market, manager)
 
+@fixture(scope="module")
+def quest_market():
+    from tests.mocks import MockPaladinQuest
+    return MockPaladinQuest()
+
+@fixture(scope="module")
+def quest_logic(crvusd, quest_market, manager, min = 10_000, max = 50_000):
+    from contracts.markets import PaladinQuestLogic
+    return PaladinQuestLogic(crvusd, quest_market, manager, min, max)
+
 
 @fixture(scope="module")
 def manager(crvusd, bribe_poster, bribe_manager, token_rescuer, emergency_admin):

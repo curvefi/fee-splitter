@@ -14,14 +14,6 @@ def createRangedQuest(
     ...
 
 @external
-def extendQuestDuration(
-    questID: uint256,
-    addedDuration: uint48,
-    addedRewardAmount: uint256,
-    feeAmount: uint256):
-    ...
-
-@external
 def withdrawUnusedRewards(
     questID: uint256,
     recipient: address):
