@@ -139,10 +139,10 @@ def create_quest(
     blacklist: DynArray[address, 10] = []
     if(self.voter_blacklist_length > 0):
         vote_type = 1
-    for i: uint256 in range(10):
-        if(self.voter_blacklist[i] == empty(address)):
-            break
-        blacklist.append(self.voter_blacklist[i])
+        for i: uint256 in range(10):
+            if(self.voter_blacklist[i] == empty(address)):
+                break
+            blacklist.append(self.voter_blacklist[i])
 
     return extcall self.quest_board.createRangedQuest(
         gauge,
@@ -155,7 +155,7 @@ def create_quest(
         fee_amount,
         vote_type, # blacklist, or normal
         1, # rollover
-        empty(DynArray[address, 1])
+        blacklist
     )
 
 

@@ -249,3 +249,47 @@ def test_set_voter_blacklist_address_zero(quest_logic, bribe_poster):
     assert quest_logic.voter_blacklist(2) == address_zero
     assert quest_logic.voter_blacklist(3) == address_zero
     assert quest_logic.voter_blacklist(4) == address_zero
+
+def test_bribe_with_blacklist(quest_logic, quest_market, crvusd, manager, bribe_poster):
+    random_gauge = boa.env.generate_address()
+    random_id = 43958
+    new_list = [boa.env.generate_address(), boa.env.generate_address()]
+
+    with boa.env.prank(bribe_poster):
+        quest_logic.set_voter_blacklist(new_list)
+
+    leftover_crvusd = 10 ** 18
+
+    crvusd.mint_for_testing(quest_logic, leftover_crvusd)
+
+    assert quest_logic.quest_id(random_gauge) == 0
+
+    with boa.env.prank(manager.address):
+        quest_logic.bribe(
+            random_gauge,
+            10400000,
+            bytes()
+        )
+
+    assert quest_logic.quest_id(random_gauge) == 99 # from mock
+
+    quest_logic.eval(f"self.quest_id[{random_gauge}] = {random_id}")
+
+    assert quest_market.creation_creator() == quest_logic.address
+    assert quest_market.creation_gauge() == random_gauge
+    assert quest_market.creation_rewardToken() == crvusd.address
+    assert quest_market.creation_start_period() == False
+    assert quest_market.creation_duration() == 2
+    assert quest_market.creation_minRewardPerVote() == 10_000
+    assert quest_market.creation_maxRewardPerVote() == 50_000
+    assert quest_market.creation_totalRewardAmount() == 10000000
+    assert quest_market.creation_feeAmount() == 400000
+    assert quest_market.creation_voteType() == 1
+    assert quest_market.creation_closeType() == 1
+    assert quest_market.eval("len(self.creation_blacklist)") == 2
+    assert quest_market.creation_blacklist(0) == new_list[0]
+    assert quest_market.creation_blacklist(1) == new_list[1]
+
+    # cleaning dust
+    assert crvusd.balanceOf(quest_logic.address) == 0
+    assert crvusd.balanceOf(manager.address) == leftover_crvusd

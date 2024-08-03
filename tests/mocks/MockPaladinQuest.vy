@@ -45,7 +45,12 @@ def createRangedQuest(
     self.creation_feeAmount = feeAmount
     self.creation_voteType = voteType
     self.creation_closeType = closeType
-    self.creation_blacklist = voterList
+    #self.creation_blacklist = voterList
+    if(len(voterList) > 0):
+        for i: uint256 in range(10):
+            self.creation_blacklist.append(voterList[i])
+            if(i == len(voterList) - 1):
+                break
 
     return 99
 
