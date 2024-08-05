@@ -7,9 +7,13 @@ from contracts.manual import IBribeLogic
 implements: IBribeLogic
 token: IERC20
 manager: address
-received_amount: public(uint256)
-received_gauge: public(address)
-received_data: public(Bytes[1024])
+
+struct IncentivePayload:
+    gauge: address
+    amount: uint256
+    data: Bytes[1024]
+
+received_payloads: public(DynArray[IncentivePayload, 1000])
 
 @deploy
 def __init__(token: address, manager: address):
@@ -18,9 +22,12 @@ def __init__(token: address, manager: address):
 
 @external
 def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
-    self.received_amount = amount
-    self.received_gauge = gauge
-    self.received_data = data
+    payload: IncentivePayload = empty(IncentivePayload)
+    payload.gauge = gauge
+    payload.amount = amount
+    payload.data = data
+
+    self.received_payloads.append(payload)
 
     balance: uint256 = staticcall self.token.balanceOf(self)
 
