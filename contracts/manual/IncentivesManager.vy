@@ -102,7 +102,8 @@ def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_poster: addre
 def set_gauge_cap(gauge: address, cap: uint256):
     """
     @notice Setter to change the maximum amount of voting incentives
-        that can be allocated in a single bounty.
+        that can be allocated in a single bounty. Setting the cap to
+        zero effectively prevents the gauge from receiving incentives.
     @dev This function is a safeguard to prevent fatfingering large
         amounts or bribing the wrong gauge. This **does not**
         prevent spending more than `MAX_INCENTIVES_PER_GAUGE`
@@ -145,8 +146,10 @@ def update_incentives_batch(payloads: DynArray[IncentivePayload, MAX_BRIBES]):
         incentives are set, the `confirm_batch` function must be
         called to lock the incentives and prepare the contract
         for the distribution.
-    @param payloads The list of payload to be posted, containing
-        amounts, gauges and additional data (if any).
+    @dev Each call to this function will overwrite the previous
+        incentives.
+    @param payloads The list of payload to be posted, each
+        containing amounts, gauges and additional data (if any).
     """
     access_control._check_role(BRIBE_POSTER, msg.sender)
     assert len(payloads) > 0, "manager: no incentives given"
