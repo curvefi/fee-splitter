@@ -80,14 +80,14 @@ def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_poster: addre
     @param emergency_admin The entity in charge of moving the funds elsewhere in
         case of emergency.
     """
-    assert _managed_asset != empty(address), "zeroaddr: managed_asset"
+    assert _managed_asset != empty(IERC20), "zeroaddr: managed_asset"
     assert bribe_manager != empty(address), "zeroaddr: bribe_manager"
     assert bribe_poster != empty(address), "zeroaddr: bribe_poster"
     assert token_rescuer != empty(address), "zeroaddr: token_rescuer"
     assert emergency_admin != empty(address), "zeroaddr: emergency_admin"
     # msg.sender is admin
     access_control.__init__()
-    managed_asset = IERC20(_managed_asset)
+    managed_asset = _managed_asset
 
     # grant roles to the different managers
     access_control._grant_role(BRIBE_POSTER, bribe_poster)
