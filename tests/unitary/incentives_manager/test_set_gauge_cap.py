@@ -1,7 +1,7 @@
 import boa
 
 
-def test_set_gauge_cap_expected(manager, bribe_manager):
+def test_expected_behavior(manager, bribe_manager):
     m = manager
     random_gauge = boa.env.generate_address()
 
@@ -10,7 +10,7 @@ def test_set_gauge_cap_expected(manager, bribe_manager):
     assert m.gauge_caps(random_gauge) == 100
 
 
-def test_update_gauge_cap_unauthorized(manager, bribe_manager):
+def test_access_control(manager, bribe_manager):
     m = manager
     random_gauge = boa.env.generate_address()
 
@@ -18,7 +18,7 @@ def test_update_gauge_cap_unauthorized(manager, bribe_manager):
         m.set_gauge_cap(random_gauge, 10 ** 24)
 
 
-def test_update_gauge_cap_too_big(manager, bribe_manager):
+def test_cap_too_big(manager, bribe_manager):
     m = manager
     random_gauge = boa.env.generate_address()
 

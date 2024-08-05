@@ -1,7 +1,7 @@
 import boa
 
 
-def test_set_bribe_logic_expected(manager, bribe_manager):
+def test_logic_expected(manager, bribe_manager):
     m = manager
     random_logic = boa.env.generate_address()
 
@@ -10,7 +10,7 @@ def test_set_bribe_logic_expected(manager, bribe_manager):
     assert m._storage.bribe_logic.get() == random_logic
 
 
-def test_set_bribe_logic_unauthorized(manager, bribe_poster):
+def test_access_control(manager, bribe_poster):
     m = manager
     random_logic = boa.env.generate_address()
 
