@@ -14,13 +14,15 @@ import ControllerFactory
 import Controller
 import DynamicWeight
 
+from snekmate.auth import ownable
+
+initializes: ownable
+exports: ownable.__interface__
+
 event SetWeights:
     distribution_weight: uint256
 
 event SetReceivers: pass
-
-event SetOwner:
-    owner: address
 
 struct Receiver:
     addr: address
@@ -43,7 +45,6 @@ allowed_controllers: public(HashMap[Controller, bool])
 
 # receiver logic
 receivers: public(DynArray[Receiver, MAX_RECEIVERS])
-owner: public(address)
 
 factory: immutable(ControllerFactory)
 crvusd: immutable(IERC20)
@@ -60,13 +61,15 @@ def __init__(_crvusd: address, _factory: address, receivers: DynArray[Receiver, 
     assert _factory != empty(address), "zeroaddr: factory"
     assert owner != empty(address), "zeroaddr: owner"
 
+    ownable.__init__()
+    ownable._transfer_ownership(owner)
+
     # setting immutables
     crvusd = IERC20(_crvusd)
     factory = ControllerFactory(_factory)
 
     # setting storage variables
     self._set_receivers(receivers)
-    self.owner = owner
 
 
 def _is_dynamic(addr: address) -> bool:
@@ -104,6 +107,7 @@ def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
 
     log SetReceivers()
 
+@nonreentrant
 @external
 def update_controllers():
     """
@@ -156,22 +160,11 @@ def set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
     @notice Set the receivers
     @param receivers The new receivers
     """
-    assert msg.sender == self.owner, "auth: only owner"
+    ownable._check_owner()
 
     self._set_receivers(receivers)
 
-@external
-def set_owner(new_owner: address):
-    """
-    @notice Set owner of the contract
-    @param new_owner Address of the new owner
-    """
-    assert msg.sender == self.owner, "auth: only owner"
-    assert new_owner != empty(address), "zeroaddr: new_owner"
 
-    self.owner = new_owner
-
-    log SetOwner(new_owner)
 
 @view
 @external
