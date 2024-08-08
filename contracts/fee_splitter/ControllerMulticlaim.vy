@@ -13,6 +13,8 @@ MAX_CONTROLLERS: constant(uint256) = 100
 
 @deploy
 def __init__(_factory: ControllerFactory):
+    assert _factory.address != empty(address), "zeroaddr: factory"
+
     factory = _factory
 
 def claim_controller_fees(controllers: DynArray[Controller, MAX_CONTROLLERS]):

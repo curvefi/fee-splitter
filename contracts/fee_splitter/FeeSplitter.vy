@@ -52,7 +52,6 @@ def __init__(_crvusd: IERC20, _factory: multiclaim.ControllerFactory, receivers:
     @param owner The address of the contract owner
     """
     assert _crvusd.address != empty(address), "zeroaddr: crvusd"
-    assert _factory.address != empty(address), "zeroaddr: factory"
     assert owner != empty(address), "zeroaddr: owner"
 
     ownable.__init__()
