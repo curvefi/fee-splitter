@@ -1,0 +1,9 @@
+@view
+@external
+def supportsInterface(interface_id: bytes4) -> bool:
+    ...
+
+@view
+@external
+def weight() -> uint256:
+    ...

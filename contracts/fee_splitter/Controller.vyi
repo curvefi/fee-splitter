@@ -1,0 +1,3 @@
+@external
+def collect_fees() -> uint256:
+    ...
