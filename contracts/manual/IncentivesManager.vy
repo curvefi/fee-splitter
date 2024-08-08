@@ -205,6 +205,7 @@ def post_incentives():
         as long as the `BRIBE_PROPOSER` has designated the incentives
         and confirmed the batch.
     """
+    assert not access_control.hasRole[BRIBE_PROPOSER][msg.sender], "manager: proposer can't post"
     assert self.incentives_locked, "manager: batch yet to be confirmed"
 
     extcall managed_asset.transfer(self.bribe_logic.address, self.total_incentives)
