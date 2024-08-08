@@ -2,18 +2,35 @@
 pragma solidity 0.8.19;
 import {Test, console} from "forge-std/Test.sol";
 
-import {IVotemarket} from "./IVotemarket.sol";
+import {IVotemarket} from "./votemarket/IVotemarket.sol";
 import {ICrvUSD} from "./ICrvUSD.sol";
+
+struct IncentivesPayload {
+    address gauge;
+    uint256 amount;
+    bytes data;
+}
 
 interface IIncentivesManager {
     function set_bribe_logic(address logic) external;
     function set_gauge_cap(address gauge, uint256 cap) external;
-    function post_bribe(address gauge, uint256 amount, bytes calldata data) external returns (uint256);
+    function update_incentives_batch(IncentivesPayload[] calldata payload) external;
+    function confirm_batch() external;
+    function post_incentives() external;
 }
 
-interface IStakeDaoLogic {
-    function bribe(address gauge, uint256 amount, bytes memory data) external;
+interface IBribeLogic {
+    function bribe(address gauge, uint256 amount, bytes calldata data) external;
+}
+
+interface IStakeDaoLogic is IBribeLogic {
     function close_bounty(uint256 id, address receiver) external;
+}
+
+interface IQuestLogic is IBribeLogic {
+    function withdrawUnusedRewards(uint256 questID, address recipient) external;
+    function questWithdrawableAmount(uint256 questID) external returns (uint256);
+    function customPlatformFeeRatio(address creator) external view returns (uint256);
 }
 
 contract IntegrationTest is Test {
@@ -48,7 +65,7 @@ contract IntegrationTest is Test {
     address[] gauges; 
 
     function setUp() public {
-        vm.createSelectFork("https://rpc.ankr.com/eth");
+        vm.createSelectFork("https://rpc.ankr.com/eth", 20382333);
 
         bribeManager = makeAddr("BRIBE_MANAGER");
         bribePoster = makeAddr("BRIBE_POSTER");

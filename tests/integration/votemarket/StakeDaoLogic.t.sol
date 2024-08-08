@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import "./IntegrationTest.sol";
+import "../IntegrationTest.sol";
 
 contract StakeDaoLogicTest is IntegrationTest {
     function _bribe(address gauge, uint256 amount, uint256 maxAmountPerVote) public {
@@ -35,7 +35,7 @@ contract StakeDaoLogicTest is IntegrationTest {
 
         vm.prank(bribeManager);
         im.set_gauge_cap(gauge, maxBribeAmount);
-        
+
         vm.expectCall(
             address(_vm),
             // Partial match

@@ -1,29 +1,29 @@
 // SPDX-License-Identifier: unlicensed
 pragma solidity 0.8.19;
 
-import "./IntegrationTest.sol";
+import "../IntegrationTest.sol";
 
 contract IncentivesManagerTest is IntegrationTest {
     mapping(address => uint256) public gaugeToId;
     mapping(address => uint256) public gaugeToPeriods;
     mapping(address => uint256) public gaugeToRewards;
 
-    function _bribe(address gauge, uint256 amount, uint256 maxAmountPerVote) public returns (uint256) {
+    function _bribe(address gauge, uint256 amount, uint256 maxAmountPerVote) public {
         bytes memory bribeData = abi.encode(uint256(maxAmountPerVote));
+        IncentivesPayload[] memory payload = new IncentivesPayload[](1);
+        payload[0].gauge = gauge;
+        payload[0].amount = amount;
+        payload[0].data = bribeData;
         deal(address(crvUSD), address(im), amount);
-        vm.prank(address(bribePoster));
-        uint256 expectedId = gaugeToId[gauge];
-        uint256 id = im.post_bribe(gauge, amount, bribeData);
-        if (expectedId != 0) {
-            assertEq(expectedId, id);
-        } else {
-            gaugeToId[gauge] = id;
-        }
+        vm.startPrank(address(bribePoster));
+//        uint256 expectedId = gaugeToId[gauge];
+        im.update_incentives_batch(payload);
+        im.confirm_batch();
+        vm.stopPrank();
+        im.post_incentives();
 
         gaugeToPeriods[gauge] += 2;
         gaugeToRewards[gauge] += amount;
-
-        return id;
     }
 
     function testFuzz_E2E(uint256 amount, uint256 maxAmountPerVote) public {
@@ -33,7 +33,8 @@ contract IncentivesManagerTest is IntegrationTest {
 
         vm.prank(bribeManager);
         im.set_gauge_cap(gauge, amount);
-        uint256 id = _bribe(gauge, amount, maxAmountPerVote);
+        uint256 id = _vm.nextID();
+        _bribe(gauge, amount, maxAmountPerVote);
 
         IVotemarket.Bounty memory b = _vm.getBounty(id);
 
