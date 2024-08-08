@@ -1,7 +1,0 @@
-event Query:
-    sender: indexed(address)
-    storageContract: indexed(address)
-
-@external
-def lpnCallback(request_id: uint256 , results: DynArray[uint256, 1000]):
-    ...

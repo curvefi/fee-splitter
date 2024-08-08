@@ -98,7 +98,6 @@ def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
     log SetReceivers()
 
 # TODO mention contracts are optimised for readability over gas consumption
-# TODO rename poster to proposer
 
 @nonreentrant
 @external
