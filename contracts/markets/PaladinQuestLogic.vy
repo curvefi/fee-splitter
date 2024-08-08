@@ -74,14 +74,13 @@ def __init__(crvusd: address, quest_board: address, incentives_manager: address,
 
 
 @external
-def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
+def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     """
     @notice Posts a bribe on Paladin's Quest
     @dev The data payload is expected to contian the minimum
     and maximum amount of crvUSD that can be distributed per vote.
     @dev Each bribe will create a new quest, and claim back all 
     unspent funds from the previous quest to rollover to the new one.
-    @return The id of the quest created
     """
     ownable._check_owner()
 
@@ -98,8 +97,6 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
     leftovers: uint256 = staticcall self.crvusd.balanceOf(self)
     if leftovers > 0:
         extcall self.crvusd.transfer(msg.sender, leftovers)
-
-    return quest_id
 
 @external
 def withdraw_from_quest(quest_id: uint256, receiver: address):
@@ -127,7 +124,7 @@ def create_quest(
     max_amount_per_vote: uint256) -> uint256:
     extcall self.crvusd.approve(self.quest_board.address, amount)
 
-    # calculate fees and budget
+    # calculate fees and budget
     fee_ratio: uint256 = staticcall self.quest_board.customPlatformFeeRatio(self)
     if fee_ratio == 0:
         fee_ratio = QUEST_DEFAULT_FEE_RATIO

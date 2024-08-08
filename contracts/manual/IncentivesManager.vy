@@ -211,7 +211,8 @@ def post_incentives():
 
     for gauge: address in self.pending_gauges:
         amount: uint256 = self.amount_for_gauge[gauge]
-        extcall self.bribe_logic.bribe(gauge, amount, self.data_for_gauge[gauge])
+        data: Bytes[MAX_DATA_SIZE] = self.data_for_gauge[gauge]
+        extcall self.bribe_logic.bribe(gauge, amount, data)
 
     assert staticcall managed_asset.balanceOf(self.bribe_logic.address) == 0, "manager: bribe not fully spent"
 

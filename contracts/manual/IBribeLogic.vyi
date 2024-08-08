@@ -1,5 +1,5 @@
 MAX_BRIBE_PAYLOAD_SIZE: constant(uint256) = 1024
 
 @external
-def bribe(gauge: address, amount: uint256, data: Bytes[MAX_BRIBE_PAYLOAD_SIZE]) -> uint256:
+def bribe(gauge: address, amount: uint256, data: Bytes[MAX_BRIBE_PAYLOAD_SIZE]):
     ...

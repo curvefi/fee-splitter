@@ -60,7 +60,7 @@ def __init__(crvusd: address, votemarket: address, incentives_manager: address):
 
 
 @external
-def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
+def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     """
     @notice Posts a bribe on StakeDAO's Votemarket
     @dev The data payload is expected to contain the maximum amount
@@ -72,7 +72,6 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
         successive bounty for that id will be recreated instead of
         being increased. This contract assumes that the `bounty_id`
         will never be 0.
-    @return The id of the bounty created or increased
     """
     ownable._check_owner()
 
@@ -89,8 +88,6 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]) -> uint256:
     leftovers: uint256 = staticcall self.crvusd.balanceOf(self)
     if leftovers > 0:
         extcall self.crvusd.transfer(msg.sender, leftovers)
-
-    return bounty_id
 
 @external
 def close_bounty(bounty_id: uint256, receiver: address):
