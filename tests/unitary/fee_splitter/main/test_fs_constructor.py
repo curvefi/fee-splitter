@@ -1,5 +1,4 @@
 import boa
-import pytest
 
 def test_expected_behavior(fee_splitter_deployer, receivers, mock_dynamic_weight_deployer):
     crvusd = boa.env.generate_address()
@@ -15,8 +14,24 @@ def test_expected_behavior(fee_splitter_deployer, receivers, mock_dynamic_weight
         assert weight == expected_weight
         assert dynamic == expected_dynamic
     assert splitter._immutables.crvusd == crvusd
-    assert splitter._immutables.factory == factory
+    # TODO uncomment when bao fixes this
+    # assert splitter.eval("multiclaim.factory") == factory
     assert splitter.owner() == owner
+
+def test_zero_address(fee_splitter_deployer):
+    crvusd = boa.env.generate_address()
+    factory = boa.env.generate_address()
+    owner = boa.env.generate_address()
+
+    zero = boa.eval("empty(address)")
+
+    with boa.reverts("zeroaddr: crvusd"):
+        fee_splitter_deployer(zero, factory, [(boa.env.generate_address(), 1, False)], owner)
+    # sanity check since modules are pretty recent
+    with boa.reverts("zeroaddr: factory"):
+        fee_splitter_deployer(crvusd, zero, [(boa.env.generate_address(), 1, False)], owner)
+    with boa.reverts("zeroaddr: owner"):
+        fee_splitter_deployer(crvusd, factory, [(boa.env.generate_address(), 1, False)], zero)
 
 
 
