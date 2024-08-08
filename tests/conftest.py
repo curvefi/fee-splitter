@@ -1,7 +1,7 @@
 import boa
 from pytest import fixture
 @fixture(scope="module")
-def bribe_poster():
+def bribe_proposer():
     return boa.env.generate_address()
 
 

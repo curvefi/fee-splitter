@@ -186,10 +186,10 @@ def test_withdraw_from_quest_unauthorized(quest_logic):
     with boa.reverts("access_control: account is missing role"):
         quest_logic.withdraw_from_quest(7890, boa.env.generate_address())
 
-def test_update_rewards_per_vote_range(quest_logic, bribe_poster):
+def test_update_rewards_per_vote_range(quest_logic, bribe_proposer):
     assert quest_logic.min_reward_per_vote() == 10_000
     assert quest_logic.max_reward_per_vote() == 50_000
-    with boa.env.prank(bribe_poster):
+    with boa.env.prank(bribe_proposer):
         quest_logic.update_rewards_per_vote_range(8_000, 45_000)
     assert quest_logic.min_reward_per_vote() == 8_000
     assert quest_logic.max_reward_per_vote() == 45_000
@@ -198,26 +198,26 @@ def test_withdraw_from_quest_unauthorized(quest_logic):
     with boa.reverts("access_control: account is missing role"):
         quest_logic.update_rewards_per_vote_range(8_000, 45_000)
 
-def test_update_rewards_per_vote_range_zero(quest_logic, bribe_poster):
+def test_update_rewards_per_vote_range_zero(quest_logic, bribe_proposer):
     with boa.reverts("zero: new_min"):
-        with boa.env.prank(bribe_poster):
+        with boa.env.prank(bribe_proposer):
             quest_logic.update_rewards_per_vote_range(0, 45_000)
     with boa.reverts("zero: new_max"):
-        with boa.env.prank(bribe_poster):
+        with boa.env.prank(bribe_proposer):
             quest_logic.update_rewards_per_vote_range(8_000, 0)
 
-def test_update_rewards_per_vote_range_invalid(quest_logic, bribe_poster):
+def test_update_rewards_per_vote_range_invalid(quest_logic, bribe_proposer):
     with boa.reverts("invalid: new_min > new_max"):
-        with boa.env.prank(bribe_poster):
+        with boa.env.prank(bribe_proposer):
             quest_logic.update_rewards_per_vote_range(45_000, 8_000)
 
-def test_set_voter_blacklist(quest_logic, bribe_poster):
+def test_set_voter_blacklist(quest_logic, bribe_proposer):
     address_zero = boa.eval("empty(address)")
     new_list = [boa.env.generate_address(), boa.env.generate_address(), boa.env.generate_address()]
 
     assert quest_logic.voter_blacklist_length() == 0
 
-    with boa.env.prank(bribe_poster):
+    with boa.env.prank(bribe_proposer):
         quest_logic.set_voter_blacklist(new_list)
 
     assert quest_logic.voter_blacklist_length() == 3
@@ -233,13 +233,13 @@ def test_set_voter_blacklist(quest_logic):
     with boa.reverts("access_control: account is missing role"):
         quest_logic.set_voter_blacklist(new_list)
 
-def test_set_voter_blacklist_address_zero(quest_logic, bribe_poster):
+def test_set_voter_blacklist_address_zero(quest_logic, bribe_proposer):
     address_zero = boa.eval("empty(address)")
     new_list = [boa.env.generate_address(), boa.env.generate_address(), address_zero, boa.env.generate_address()]
 
     assert quest_logic.voter_blacklist_length() == 0
 
-    with boa.env.prank(bribe_poster):
+    with boa.env.prank(bribe_proposer):
         quest_logic.set_voter_blacklist(new_list)
 
     assert quest_logic.voter_blacklist_length() == 2
@@ -250,12 +250,13 @@ def test_set_voter_blacklist_address_zero(quest_logic, bribe_poster):
     assert quest_logic.voter_blacklist(3) == address_zero
     assert quest_logic.voter_blacklist(4) == address_zero
 
-def test_bribe_with_blacklist(quest_logic, quest_market, crvusd, manager, bribe_poster):
+def test_bribe_with_blacklist(quest_logic, quest_market, crvusd, manager,
+                              bribe_proposer):
     random_gauge = boa.env.generate_address()
     random_id = 43958
     new_list = [boa.env.generate_address(), boa.env.generate_address()]
 
-    with boa.env.prank(bribe_poster):
+    with boa.env.prank(bribe_proposer):
         quest_logic.set_voter_blacklist(new_list)
 
     leftover_crvusd = 10 ** 18

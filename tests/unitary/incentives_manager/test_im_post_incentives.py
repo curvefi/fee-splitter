@@ -1,7 +1,7 @@
 import boa
 
 def test_expected_behavior(manager_with_voting_market, generic_voting_market,
-                             bribe_poster, bribe_manager, crvusd):
+                           bribe_proposer, bribe_manager, crvusd):
     m = manager_with_voting_market
 
     payloads = [(boa.env.generate_address(), i * 10**20, bytes()) for i in range(1, 10)]
@@ -14,7 +14,7 @@ def test_expected_behavior(manager_with_voting_market, generic_voting_market,
         for (gauge, _, _) in payloads:
             m.set_gauge_cap(gauge, 10**23)
 
-    with boa.env.prank(bribe_poster):
+    with boa.env.prank(bribe_proposer):
         m.update_incentives_batch(payloads)
         m.confirm_batch()
 

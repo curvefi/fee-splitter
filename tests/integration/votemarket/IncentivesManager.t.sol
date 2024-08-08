@@ -15,7 +15,7 @@ contract IncentivesManagerTest is IntegrationTest {
         payload[0].amount = amount;
         payload[0].data = bribeData;
         deal(address(crvUSD), address(im), amount);
-        vm.startPrank(address(bribePoster));
+        vm.startPrank(address(bribeProposer));
 //        uint256 expectedId = gaugeToId[gauge];
         im.update_incentives_batch(payload);
         im.confirm_batch();

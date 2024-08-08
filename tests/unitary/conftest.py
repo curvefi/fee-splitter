@@ -45,6 +45,6 @@ def quest_logic(crvusd, quest_market, manager, min = 10_000, max = 50_000):
 
 
 @fixture(scope="module")
-def manager(crvusd, bribe_poster, bribe_manager, token_rescuer, emergency_admin):
+def manager(crvusd, bribe_proposer, bribe_manager, token_rescuer, emergency_admin):
     from contracts.manual import IncentivesManager
-    return IncentivesManager(crvusd, bribe_manager, bribe_poster, token_rescuer, emergency_admin)
+    return IncentivesManager(crvusd, bribe_manager, bribe_proposer, token_rescuer, emergency_admin)

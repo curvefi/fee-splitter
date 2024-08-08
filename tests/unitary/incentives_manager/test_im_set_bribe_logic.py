@@ -10,7 +10,7 @@ def test_logic_expected(manager, bribe_manager):
     assert m._storage.bribe_logic.get() == random_logic
 
 
-def test_access_control(manager, bribe_poster):
+def test_access_control(manager, bribe_proposer):
     m = manager
     random_logic = boa.env.generate_address()
 

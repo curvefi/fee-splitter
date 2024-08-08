@@ -48,7 +48,7 @@ MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 10**23 # 100.000 tokens (c
 MAX_BRIBES: constant(uint256) = 1000
 MAX_DATA_SIZE: constant(uint256) = 1024
 
-BRIBE_POSTER: public(constant(bytes32)) = keccak256("BRIBE_POSTER")
+BRIBE_PROPOSER: public(constant(bytes32)) = keccak256("BRIBE_PROPOSER")
 BRIBE_MANAGER: public(constant(bytes32)) = keccak256("BRIBE_MANAGER")
 TOKEN_RESCUER: public(constant(bytes32)) = keccak256("TOKEN_RESCUER")
 EMERGENCY_ADMIN: public(constant(bytes32)) = keccak256("EMERGENCY_ADMIN")
@@ -68,11 +68,11 @@ incentives_locked: public(bool)
 
 
 @deploy
-def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_poster: address, token_rescuer: address, emergency_admin: address):
+def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_proposer: address, token_rescuer: address, emergency_admin: address):
     """
     @dev After this function is called ownership of the contract is
         renounced making it impossible.
-    @param bribe_poster The entity in charge of posting bribes.
+    @param bribe_proposer The entity in charge of posting bribes.
     @param bribe_manager The entity in charge of whitelisting gauges and
         updating the bribe logic (in case the voting market has to be changed).
     @param token_rescuer The entity in charge of rescuing unmanaged funds
@@ -82,7 +82,7 @@ def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_poster: addre
     """
     assert _managed_asset != empty(IERC20), "zeroaddr: managed_asset"
     assert bribe_manager != empty(address), "zeroaddr: bribe_manager"
-    assert bribe_poster != empty(address), "zeroaddr: bribe_poster"
+    assert bribe_proposer != empty(address), "zeroaddr: bribe_proposer"
     assert token_rescuer != empty(address), "zeroaddr: token_rescuer"
     assert emergency_admin != empty(address), "zeroaddr: emergency_admin"
     # msg.sender is admin
@@ -90,7 +90,7 @@ def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_poster: addre
     managed_asset = _managed_asset
 
     # grant roles to the different managers
-    access_control._grant_role(BRIBE_POSTER, bribe_poster)
+    access_control._grant_role(BRIBE_PROPOSER, bribe_proposer)
     access_control._grant_role(BRIBE_MANAGER, bribe_manager)
     access_control._grant_role(TOKEN_RESCUER, token_rescuer)
     access_control._grant_role(EMERGENCY_ADMIN, emergency_admin)
@@ -151,7 +151,7 @@ def update_incentives_batch(payloads: DynArray[IncentivePayload, MAX_BRIBES]):
     @param payloads The list of payload to be posted, each
         containing amounts, gauges and additional data (if any).
     """
-    access_control._check_role(BRIBE_POSTER, msg.sender)
+    access_control._check_role(BRIBE_PROPOSER, msg.sender)
     assert len(payloads) > 0, "manager: no incentives given"
 
     # empty the previous payloads
@@ -177,7 +177,7 @@ def confirm_batch():
     @notice Lock the incentives to prevent further updates and prepare
         the contract for the distribution of the incentives.
     """
-    access_control._check_role(BRIBE_POSTER, msg.sender)
+    access_control._check_role(BRIBE_PROPOSER, msg.sender)
     assert len(self.pending_gauges) > 0, "manager: no incentives batched"
 
     self.incentives_locked = True
@@ -191,7 +191,7 @@ def cancel_batch():
         This function is useful in case of errors or if the incentives
         are no longer needed.
     """
-    access_control._check_role(BRIBE_POSTER, msg.sender)
+    access_control._check_role(BRIBE_PROPOSER, msg.sender)
 
     self.incentives_locked = False
 
@@ -202,7 +202,7 @@ def post_incentives():
     """
     @notice Permissionless function to post the incentives for the
         designated gauges. This function can be called by anyone
-        as long as the `BRIBE_POSTER` has designated the incentives
+        as long as the `BRIBE_PROPOSER` has designated the incentives
         and confirmed the batch.
     """
     assert self.incentives_locked, "manager: batch yet to be confirmed"

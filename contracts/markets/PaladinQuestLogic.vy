@@ -47,7 +47,7 @@ BRIBE_DURATION: constant(uint8) = 2 # bi-weekly
 QUEST_DEFAULT_FEE_RATIO: constant(uint256) = 400
 MAX_BPS: constant(uint256) = 10000
 TOKEN_RESCUER: constant(bytes32) = keccak256("TOKEN_RESCUER")
-BRIBE_POSTER: constant(bytes32) = keccak256("BRIBE_POSTER")
+BRIBE_PROPOSER: constant(bytes32) = keccak256("BRIBE_PROPOSER")
 
 @deploy
 def __init__(crvusd: address, quest_board: address, incentives_manager: address, min_amount_per_vote: uint256, max_amount_per_vote: uint256):
@@ -173,7 +173,7 @@ def update_rewards_per_vote_range(new_min: uint256, new_max: uint256):
     @param new_max The new maximum amount of crvUSD that can be distributed per vote
     """
     manager: IncentivesManager = IncentivesManager(ownable.owner)
-    assert staticcall manager.hasRole(BRIBE_POSTER, msg.sender), "access_control: account is missing role"
+    assert staticcall manager.hasRole(BRIBE_PROPOSER, msg.sender), "access_control: account is missing role"
     assert new_min > 0, "zero: new_min"
     assert new_max > 0, "zero: new_max"
     assert new_min < new_max, "invalid: new_min > new_max"
@@ -188,7 +188,7 @@ def set_voter_blacklist(new_list: DynArray[address, 10]):
     @param new_list The list of addresses to be blacklisted
     """
     manager: IncentivesManager = IncentivesManager(ownable.owner)
-    assert staticcall manager.hasRole(BRIBE_POSTER, msg.sender), "access_control: account is missing role"
+    assert staticcall manager.hasRole(BRIBE_PROPOSER, msg.sender), "access_control: account is missing role"
     new_list_len: uint256 = 0
     # clear the blacklist
     for i: uint256 in range(10):

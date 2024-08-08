@@ -54,7 +54,7 @@ contract IntegrationTest is Test {
     );
 
     address public bribeManager;
-    address public bribePoster;
+    address public bribeProposer;
     address public tokenRescuer;
     address public emergencyAdmin;
 
@@ -68,7 +68,7 @@ contract IntegrationTest is Test {
         vm.createSelectFork("https://rpc.ankr.com/eth", 20382333);
 
         bribeManager = makeAddr("BRIBE_MANAGER");
-        bribePoster = makeAddr("BRIBE_POSTER");
+        bribeProposer = makeAddr("BRIBE_PROPOSER");
         tokenRescuer = makeAddr("TOKEN_RESCUER");
         emergencyAdmin = makeAddr("EMERGENCY_ADMIN");
 
@@ -103,7 +103,7 @@ contract IntegrationTest is Test {
 
         crvUSD = ICrvUSD(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
         _vm = IVotemarket(0x000000073D065Fc33a3050C2d0E19C393a5699ba);
-        bytes memory incentivesManagerArgs = abi.encode(address(crvUSD), bribeManager, bribePoster, tokenRescuer, emergencyAdmin);
+        bytes memory incentivesManagerArgs = abi.encode(address(crvUSD), bribeManager, bribeProposer, tokenRescuer, emergencyAdmin);
         im = IIncentivesManager(deployCode("IncentivesManager", incentivesManagerArgs));
         bytes memory stakeDaoLogicArgs = abi.encode(address(crvUSD), address(_vm), address(im));
         stakeDaoLogic = IStakeDaoLogic(deployCode("StakeDaoLogic", stakeDaoLogicArgs));
