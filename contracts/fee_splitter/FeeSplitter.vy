@@ -76,7 +76,7 @@ def _is_dynamic(addr: address) -> bool:
     success, response = raw_call(
         addr,
         abi_encode(DYNAMIC_WEIGHT_EIP165_ID, method_id=method_id("supportsInterface(bytes4)")),
-        max_outsize=32, # TODO can this be smaller?
+        max_outsize=32,
         is_static_call=True,
         revert_on_failure=False
     )
