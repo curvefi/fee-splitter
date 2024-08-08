@@ -12,7 +12,7 @@
     voting incentives and quests interchangably to refer
     to the action of granting rewards when a veCRV holder
     votes for a designated gauge.
-@custom:security security@curve.fi
+@custom:security security@curve.fi valentin@paladin.vote
 """
 
 from snekmate.auth import ownable
