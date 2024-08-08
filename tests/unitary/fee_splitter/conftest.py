@@ -1,8 +1,5 @@
-import pytest
 from pytest import fixture
 import boa
-
-# TODO add fixture with multiples weights setup
 
 @fixture
 def owner():
@@ -24,7 +21,7 @@ def mock_factory():
 @fixture
 def mock_controller_deployer():
     from tests.mocks import MockController
-    return MockController()
+    return MockController
 
 @fixture
 def mock_dynamic_weight_deployer():
@@ -46,7 +43,6 @@ def receivers(request, mock_dynamic_weight_deployer):
 @fixture
 def fee_splitter(fee_splitter_deployer, crvusd, receivers, mock_factory, owner):
     return fee_splitter_deployer(crvusd, mock_factory, receivers, owner)
-
 
 @fixture
 def fee_splitter_with_controllers(fee_splitter, mock_factory, mock_controller_deployer):
