@@ -10,14 +10,14 @@ in a single transaction and distributes them according to some weights.
 """
 
 from ethereum.ercs import IERC20
-import ControllerFactory
-import Controller
 import DynamicWeight
+import ControllerMulticlaim as multiclaim
 
 from snekmate.auth import ownable
 
+initializes: multiclaim
 initializes: ownable
-exports: ownable.__interface__
+exports: (ownable.__interface__, multiclaim.__interface__)
 
 event SetWeights:
     distribution_weight: uint256
@@ -30,8 +30,7 @@ struct Receiver:
     dynamic: bool
 
 version: public(constant(String[8])) = "0.1.0" # no guarantees on abi stability
-# maximum number of claims in a single transaction
-MAX_CONTROLLERS: constant(uint256) = 100
+
 # maximum number of splits
 MAX_RECEIVERS: constant(uint256) = 100
 # maximum basis points (100%)
@@ -39,34 +38,29 @@ MAX_BPS: constant(uint256) = 10_000
 # TODO placeholder
 DYNAMIC_WEIGHT_EIP165_ID: constant(bytes4) = 0x12431234
 
-# controllers variables
-controllers: public(DynArray[Controller, MAX_CONTROLLERS])
-allowed_controllers: public(HashMap[Controller, bool])
-
 # receiver logic
 receivers: public(DynArray[Receiver, MAX_RECEIVERS])
 
-factory: immutable(ControllerFactory)
 crvusd: immutable(IERC20)
 
 @deploy
-def __init__(_crvusd: address, _factory: address, receivers: DynArray[Receiver, MAX_RECEIVERS], owner: address):
+def __init__(_crvusd: IERC20, _factory: multiclaim.ControllerFactory, receivers: DynArray[Receiver, MAX_RECEIVERS], owner: address):
     """
     @notice Contract constructor
     @param _crvusd The address of the crvUSD token contract
     @param receivers TODO
     @param owner The address of the contract owner
     """
-    assert _crvusd != empty(address), "zeroaddr: crvusd"
-    assert _factory != empty(address), "zeroaddr: factory"
+    assert _crvusd.address != empty(address), "zeroaddr: crvusd"
+    assert _factory.address != empty(address), "zeroaddr: factory"
     assert owner != empty(address), "zeroaddr: owner"
 
     ownable.__init__()
     ownable._transfer_ownership(owner)
+    multiclaim.__init__(_factory)
 
     # setting immutables
-    crvusd = IERC20(_crvusd)
-    factory = ControllerFactory(_factory)
+    crvusd = _crvusd
 
     # setting storage variables
     self._set_receivers(receivers)
@@ -90,10 +84,6 @@ def _is_dynamic(addr: address) -> bool:
     return success and convert(response, bool)
 
 def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
-    """
-    @notice Set the receivers
-    @param receivers The new receivers
-    """
     assert len(receivers) > 0, "receivers: empty"
     total_weight: uint256 = 0
     for r: Receiver in receivers:
@@ -107,41 +97,19 @@ def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
 
     log SetReceivers()
 
-@nonreentrant
-@external
-def update_controllers():
-    """
-    @notice Update the list of controllers so that it corresponds to the
-        list of controllers in the factory
-    """
-    old_len: uint256 = len(self.controllers)
-    new_len: uint256 = staticcall factory.n_collaterals()
-    for i: uint256 in range(new_len - old_len, bound=MAX_CONTROLLERS):
-        i_shifted: uint256 = i + old_len
-        c: Controller = Controller(staticcall factory.controllers(i_shifted))
-        self.allowed_controllers[c] = True
-        self.controllers.append(c)
+# TODO mention contracts are optimised for readability over gas consumption
+# TODO rename poster to proposer
 
 @nonreentrant
 @external
-def claim_controller_fees(controllers: DynArray[Controller, MAX_CONTROLLERS]=[]):
+def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CONTROLLERS]=[]):
     """
     @notice Claim fees from all controllers and distribute them
     @param controllers The list of controllers to claim fees from (default: all)
-    @dev Splits and transfers the balance according to the distribution weights
+    @dev Splits and transfers the balance according to the receivers weights
     """
-    if len(controllers) == 0:
-        for c: Controller in self.controllers:
-            extcall c.collect_fees()
-    else:
-        for c: Controller in controllers:
-            if not self.allowed_controllers[c]:
-                raise "controller: not in factory"
-            extcall c.collect_fees()
 
-
-# TODO mention contracts are optimised for readability over gas consumption
-# TODO rename poster to proposer
+    multiclaim.claim_controller_fees(controllers)
 
     balance: uint256 = staticcall crvusd.balanceOf(self)
 
@@ -163,7 +131,6 @@ def set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
     ownable._check_owner()
 
     self._set_receivers(receivers)
-
 
 
 @view
