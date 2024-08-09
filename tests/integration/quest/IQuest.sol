@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.23;
+pragma solidity 0.8.19;
 
-interface Quest {
+interface IQuest {
     type PeriodState is uint8;
     type QuestCloseType is uint8;
     type QuestRewardsType is uint8;
@@ -11,6 +11,36 @@ interface Quest {
         QuestVoteType voteType;
         QuestRewardsType rewardsType;
         QuestCloseType closeType;
+    }
+
+        /** @notice Struct holding the parameters of the Quest common for all periods */
+    struct Quest {
+        // Address of the Quest creator (caller of createQuest() method)
+        address creator;
+        // Address of the ERC20 used for rewards
+        address rewardToken;
+        // Address of the target Gauge
+        address gauge;
+        // Total number of periods for the Quest
+        uint48 duration;
+        // Timestamp where the 1st QuestPeriod starts
+        uint48 periodStart;
+        // Total amount of rewards paid for this Quest
+        // If changes were made to the parameters of this Quest, this will account
+        // any added reward amounts
+        uint256 totalRewardAmount;
+        // Total reward amount that can be distributed for each period
+        uint256 rewardAmountPerPeriod;
+        // Min Amount of reward for each vote (for 1 veToken)
+        uint256 minRewardPerVote;
+        // Max Amount of reward for each vote (for 1 veToken)
+        uint256 maxRewardPerVote;
+        // Min Target Bias for the Gauge
+        uint256 minObjectiveVotes;
+        // Max Target Bias for the Gauge
+        uint256 maxObjectiveVotes;
+        // Quest Types
+        QuestTypes types;
     }
 
     error AddressZero();

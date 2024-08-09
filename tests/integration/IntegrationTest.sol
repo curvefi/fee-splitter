@@ -23,11 +23,7 @@ interface IBribeLogic {
     function bribe(address gauge, uint256 amount, bytes calldata data) external;
 }
 
-interface IQuestLogic is IBribeLogic {
-    function withdrawUnusedRewards(uint256 questID, address recipient) external;
-    function questWithdrawableAmount(uint256 questID) external returns (uint256);
-    function customPlatformFeeRatio(address creator) external view returns (uint256);
-}
+
 
 contract IntegrationTest is Test {
     address public bribeManager;

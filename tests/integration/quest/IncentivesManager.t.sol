@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: unlicensed
 pragma solidity 0.8.19;
 
-import "./VotemarketTest.sol";
+import "./QuestTest.sol";
 
-contract IncentivesManagerTest is VotemarketTest {
+contract IncentivesManagerTest is QuestTest {
     mapping(address => uint256) public gaugeToId;
     mapping(address => uint256) public gaugeToPeriods;
     mapping(address => uint256) public gaugeToRewards;
@@ -13,7 +13,8 @@ contract IncentivesManagerTest is VotemarketTest {
         IncentivesPayload[] memory payload = new IncentivesPayload[](1);
         payload[0].gauge = gauge;
         payload[0].amount = amount;
-        payload[0].data = bribeData;
+        // no bribe needed for quest
+
         deal(address(crvUSD), address(im), amount);
         vm.startPrank(address(bribeProposer));
         im.update_incentives_batch(payload);
@@ -32,15 +33,23 @@ contract IncentivesManagerTest is VotemarketTest {
 
         vm.prank(bribeManager);
         im.set_gauge_cap(gauge, amount);
-        uint256 id = quest.nextID();
+        uint256 id = _vm.nextID();
         _bribe(gauge, amount, maxAmountPerVote);
 
-        IQuest.Quest memory q = quest.quests(id);
+        IQuest.
+         memory b = _vm.getBounty(id);
 
-        // assertEq() TODO check
+        assertEq(b.gauge, gauge);
+        assertEq(b.manager, address(stakeDaoLogic));
+        assertEq(b.rewardToken, address(crvUSD));
+        assertEq(b.numberOfPeriods, gaugeToPeriods[gauge]);
+        assertEq(b.maxRewardPerVote, maxAmountPerVote);
+        assertEq(b.totalRewardAmount, gaugeToRewards[gauge]);
+        assertEq(b.blacklist.length, 0);
 
+        // vm.warp(block.timestamp + gaugeToPeriods[gauge] * 1 weeks + 1 days);
         vm.prank(0xF930EBBd05eF8b25B1797b9b2109DDC9B0d43063);
-        _vm.killBoard();
+        _vm.kill();
         address closedBountyReceiver = makeAddr("closedBountyReceiver");
         assertNotEq(crvUSD.balanceOf(address(_vm)), 0);
         vm.prank(tokenRescuer);
