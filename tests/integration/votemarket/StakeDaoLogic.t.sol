@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import "../IntegrationTest.sol";
+import "./VotemarketTest.sol";
 
-contract StakeDaoLogicTest is IntegrationTest {
+contract StakeDaoLogicTest is VotemarketTest {
     function _bribe(address gauge, uint256 amount, uint256 maxAmountPerVote) public {
         bytes memory bribeData = abi.encode(uint256(maxAmountPerVote));
         deal(address(crvUSD), address(stakeDaoLogic), amount);

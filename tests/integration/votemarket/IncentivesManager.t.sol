@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: unlicensed
 pragma solidity 0.8.19;
 
-import "../IntegrationTest.sol";
+import "./VotemarketTest.sol";
 
-contract IncentivesManagerTest is IntegrationTest {
+contract IncentivesManagerTest is VotemarketTest {
     mapping(address => uint256) public gaugeToId;
     mapping(address => uint256) public gaugeToPeriods;
     mapping(address => uint256) public gaugeToRewards;

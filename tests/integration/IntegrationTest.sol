@@ -23,10 +23,6 @@ interface IBribeLogic {
     function bribe(address gauge, uint256 amount, bytes calldata data) external;
 }
 
-interface IStakeDaoLogic is IBribeLogic {
-    function close_bounty(uint256 id, address receiver) external;
-}
-
 interface IQuestLogic is IBribeLogic {
     function withdrawUnusedRewards(uint256 questID, address recipient) external;
     function questWithdrawableAmount(uint256 questID) external returns (uint256);
@@ -34,38 +30,17 @@ interface IQuestLogic is IBribeLogic {
 }
 
 contract IntegrationTest is Test {
-    // TODO 0.8.23 might fix this
-    event BountyCreated(
-        uint256 indexed id,
-        address indexed gauge,
-        address manager,
-        address rewardToken,
-        uint8 numberOfPeriods,
-        uint256 maxRewardPerVote,
-        uint256 rewardPerPeriod,
-        uint256 totalRewardAmount,
-        bool isUpgradeable
-    );
-    event BountyDurationIncrease(
-        uint256 id, uint8 numberOfPeriods, uint256 totalRewardAmount, uint256 maxRewardPerVote
-    );
-    event BountyDurationIncreaseQueued(
-        uint256 id, uint8 numberOfPeriods, uint256 totalRewardAmount, uint256 maxRewardPerVote
-    );
-
     address public bribeManager;
     address public bribeProposer;
     address public tokenRescuer;
     address public emergencyAdmin;
 
     IIncentivesManager public im;
-    IStakeDaoLogic public stakeDaoLogic;
-    IVotemarket public _vm;
     ICrvUSD crvUSD;
     address[] gauges; 
 
-    function setUp() public {
-        vm.createSelectFork("https://rpc.ankr.com/eth", 20382333);
+    function setUp() virtual public {
+        vm.createSelectFork("https://ethereum-rpc.publicnode.com", 20382333);
 
         bribeManager = makeAddr("BRIBE_MANAGER");
         bribeProposer = makeAddr("BRIBE_PROPOSER");
@@ -99,16 +74,24 @@ contract IntegrationTest is Test {
         gauges.push(0xfcAf4EC80a94a5409141Af16a1DcA950a6973a39);
         gauges.push(0x4426027fEeb7d958498766A792AFE595b64bbFa1);
         gauges.push(0xF98cBBe9Eb3fcB9A793Fb4d0A82854023970D4A4);
-
+//        gauges.push(0x49887dF6fE905663CDB46c616BfBfBB50e85a265);
+//        gauges.push(0x3Ba9d8792Fa703eA21B6120E675aA34Bda836AEB);
+//        gauges.push(0x294280254e1c8BcF56F8618623Ec9235e8415633);
+//        gauges.push(0x30e06CADFbC54d61B7821dC1e58026bf3435d2Fe);
+//        gauges.push(0xDFF0ed66fdDCC440FB3aDFB2f12029925799979c);
+//        gauges.push(0xAE1680Ef5EFc2486E73D8d5D0f8a8dB77DA5774E);
+//        gauges.push(0x82195f78C313540E0363736b8320A256A019F7DD);
+//        gauges.push(0x41eBf0bEC45642A675e8b7536A2cE9c078A814B4);
+//        gauges.push(0x2605D72e460fEfF15BF4Fd728a5ea31928895c2a);
+//        gauges.push(0xEAED59025d6Cf575238A9B4905aCa11E000BaAD0);
+//        gauges.push(0xad7B288315b0d71D62827338251A8D89A98132A0);
+//        gauges.push(0x7dCB252f7Ea2B8dA6fA59C79EdF63f793C8b63b6);
+//        gauges.push(0xF3F6D6d412a77b680ec3a5E35EbB11BbEC319739);
+//        gauges.push(0x1Cfabd1937e75E40Fa06B650CB0C8CD233D65C20);
+//        gauges.push(0x0621982CdA4fD4041964e91AF4080583C5F099e1);
+//        gauges.push(0x222D910ef37C06774E1eDB9DC9459664f73776f0);
 
         crvUSD = ICrvUSD(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
-        _vm = IVotemarket(0x000000073D065Fc33a3050C2d0E19C393a5699ba);
-        bytes memory incentivesManagerArgs = abi.encode(address(crvUSD), bribeManager, bribeProposer, tokenRescuer, emergencyAdmin);
-        im = IIncentivesManager(deployCode("IncentivesManager", incentivesManagerArgs));
-        bytes memory stakeDaoLogicArgs = abi.encode(address(crvUSD), address(_vm), address(im));
-        stakeDaoLogic = IStakeDaoLogic(deployCode("StakeDaoLogic", stakeDaoLogicArgs));
-        vm.prank(bribeManager);
-        im.set_bribe_logic(address(stakeDaoLogic));
     }
 }
 
