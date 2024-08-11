@@ -14,8 +14,7 @@ def test_expected_behavior(fee_splitter_deployer, receivers, mock_dynamic_weight
         assert weight == expected_weight
         assert dynamic == expected_dynamic
     assert splitter._immutables.crvusd == crvusd
-    # TODO uncomment when bao fixes this
-    # assert splitter.eval("multiclaim.factory") == factory
+    assert splitter.eval("multiclaim.factory.address") == factory
     assert splitter.owner() == owner
 
 def test_zero_address(fee_splitter_deployer):
