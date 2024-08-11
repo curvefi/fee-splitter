@@ -2,24 +2,22 @@ import boa
 import pytest
 
 
-@pytest.mark.xfail
 def test_expected_behavior_default(multiclaim_with_controllers, crvusd):
     mc, controllers = multiclaim_with_controllers
 
     for c in controllers:
-        crvusd.mint_for_testing(c, 10**23)
+        assert c.eval("self.collect_counter") == 0
 
     mc.internal.claim_controller_fees([])
 
-    assert crvusd.balanceOf(mc) == len(controllers) * 10**23
+    for c in controllers:
+        assert c.eval("self.collect_counter") == 1
 
 
-@pytest.mark.xfail
-def test_expected_behavior_powerset(
-        fee_splitter_with_controllers):
-    splitter, mock_controllers = fee_splitter_with_controllers
+def test_expected_behavior_powerset(multiclaim_with_controllers):
+    multiclaim, mock_controllers = multiclaim_with_controllers
 
-    # compute powerset of list_a
+    # compute powerset of the controllers
     powerset = []
     for i in range(1 << len(mock_controllers)):
         subset = []
@@ -35,12 +33,16 @@ def test_expected_behavior_powerset(
     for subset in powerset:
         # we reset after every claim to test a new possibility
         with boa.env.anchor():
-            splitter.claim_controller_fees(subset)
+            multiclaim.internal.claim_controller_fees(subset)
+
+            for c in mock_controllers:
+                if c in subset:
+                    assert c.eval("self.collect_counter") == 1
+                else:
+                    assert c.eval("self.collect_counter") == 0
 
 
 
-@pytest.mark.xfail
 def test_random_addy(multiclaim):
-    # TODO fix boa here
     with boa.reverts("controller: not in factory"):
         multiclaim.internal.claim_controller_fees([boa.env.generate_address()])
