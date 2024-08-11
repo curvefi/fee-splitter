@@ -8,11 +8,14 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "3.12.4"
 vyper = "0.4.0"
-titanoboa = { git = "https://github.com/vyperlang/titanoboa.git", rev="20c0203f43eea2f07f17e5ed47ae5ae6ceecb0a6" }
+titanoboa = { git = "https://github.com/vyperlang/titanoboa.git", rev="83c6c51f1752f69ec0189a81521a26f550dc3905" }
 snekmate = "0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
+
+[tool.poetry.group.scripts.dependencies]
+tqdm = "^4.66.5"
 
 [build-system]
 requires = ["poetry-core"]
