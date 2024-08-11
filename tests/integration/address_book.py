@@ -1,0 +1,3 @@
+controller_factory = "0xC9332fdCB1C491Dcc683bAe86Fe3cb70360738BC"
+crvusd = "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+fee_collector = "0xa2Bcd1a4Efbd04B63cd03f5aFf2561106ebCCE00"
