@@ -2,6 +2,7 @@
 
 """
 @title FeeSplitter
+TODO update this to reflect module separation
 @notice A contract that collects fees from multiple crvUSD controllers
 in a single transaction and distributes them according to some weights.
 @license Copyright (c) Curve.Fi, 2020-2024 - all rights reserved
@@ -10,6 +11,8 @@ in a single transaction and distributes them according to some weights.
 """
 
 from ethereum.ercs import IERC20
+from ethereum.ercs import IERC165
+
 import DynamicWeight
 import ControllerMulticlaim as multiclaim
 
@@ -48,7 +51,9 @@ def __init__(_crvusd: IERC20, _factory: multiclaim.ControllerFactory, receivers:
     """
     @notice Contract constructor
     @param _crvusd The address of the crvUSD token contract
-    @param receivers TODO
+    @param _factory The address of the crvUSD controller factory
+    @param receivers The list of receivers (address, weight, dynamic).
+        Last item in the list is the excess receiver by default.
     @param owner The address of the contract owner
     """
     assert _crvusd.address != empty(address), "zeroaddr: crvusd"
@@ -61,7 +66,7 @@ def __init__(_crvusd: IERC20, _factory: multiclaim.ControllerFactory, receivers:
     # setting immutables
     crvusd = _crvusd
 
-    # setting storage variables
+    # set the receivers
     self._set_receivers(receivers)
 
 
@@ -80,7 +85,7 @@ def _is_dynamic(addr: address) -> bool:
         is_static_call=True,
         revert_on_failure=False
     )
-    return success and convert(response, bool)
+    return success and convert(response, bool) or len(response) > 32
 
 def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
     assert len(receivers) > 0, "receivers: empty"
@@ -96,8 +101,6 @@ def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
 
     log SetReceivers()
 
-# TODO mention contracts are optimised for readability over gas consumption
-
 @nonreentrant
 @external
 def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CONTROLLERS]=[]):
@@ -111,13 +114,25 @@ def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CO
 
     balance: uint256 = staticcall crvusd.balanceOf(self)
 
+    excess: uint256 = 0
+
+    i: uint256 = 0
     for r: Receiver in self.receivers:
-        weight: uint256 = 0
+        weight: uint256 = r.weight
+
         if r.dynamic:
-            weight = min(r.weight, staticcall DynamicWeight(r.addr).weight())
-        else:
-            weight = r.weight
+            dynamic_weight: uint256 = staticcall DynamicWeight(r.addr).weight()
+
+            # weight acts as a cap to the dynamic weight
+            if dynamic_weight < weight:
+                excess += weight - dynamic_weight
+                weight = dynamic_weight
+
+        if i == len(self.receivers) - 1:
+            weight += excess
+
         extcall crvusd.transfer(r.addr, balance * weight // MAX_BPS)
+        i += 1
 
 
 @external
