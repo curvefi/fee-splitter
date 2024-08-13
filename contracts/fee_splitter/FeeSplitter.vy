@@ -116,6 +116,8 @@ def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CO
 
     excess: uint256 = 0
 
+    # by iterating over the receivers, rather than the indices,
+    # we avoid an oob check at every iteration.
     i: uint256 = 0
     for r: Receiver in self.receivers:
         weight: uint256 = r.weight
