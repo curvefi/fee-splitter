@@ -57,9 +57,9 @@ def fee_splitter(
 
 @fixture
 def fee_splitter_with_controllers(
-    fee_splitter, mock_factory, mock_controller_deployer
+    fee_splitter, mock_factory, mock_controller_deployer, crvusd
 ):
-    mock_controllers = [mock_controller_deployer() for _ in range(10)]
+    mock_controllers = [mock_controller_deployer(crvusd) for _ in range(10)]
     for c in mock_controllers:
         mock_factory.add_controller(c)
 
