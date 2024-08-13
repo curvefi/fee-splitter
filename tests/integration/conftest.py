@@ -19,8 +19,8 @@ def forked_env(rpc_url):
 @fixture(scope="module")
 def factory():
     # mock is good enough as the interface matches the real one
-    controller_factory = boa.load_partial("contracts/testing/ControllerFactoryMock.vy")
-    return controller_factory.at(ab.controller_factory)
+    from tests.mocks import MockControllerFactory
+    return MockControllerFactory.at(ab.controller_factory)
 
 @fixture(scope="module")
 def incentives_manager():
@@ -34,15 +34,15 @@ def dao():
 
 @fixture(scope="module")
 def fee_splitter(incentives_manager, dao):
-    return boa.load("contracts/FeeSplitter.vy",
-                    ab.crvusd,
-                    ab.controller_factory,
-                    3_456,
-                    ab.fee_collector,
-                    incentives_manager,
-                    dao)
+    from contracts.fee_splitter import FeeSplitter
+    return FeeSplitter(ab.crvusd, ab.controller_factory, [(boa.env.generate_address(), 10_000, False)], dao)
 
 @fixture(scope="module")
 def fee_splitter_with_controllers(fee_splitter):
     fee_splitter.update_controllers()
     return fee_splitter
+
+@fixture(scope="module")
+def crvusd():
+    from tests.mocks import MockERC20
+    return MockERC20.at(ab.crvusd)
