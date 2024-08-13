@@ -888,13 +888,13 @@ test = ["eth-utils (>=2.0.0)", "hypothesis (>=3.44.24,<=6.31.6)", "pytest (>=7.0
 
 [[package]]
 name = "hypothesis"
-version = "6.110.2"
+version = "6.111.0"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "hypothesis-6.110.2-py3-none-any.whl", hash = "sha256:9d9a41feed8ce8a7c9a1ca22db41bd3fd1aa92b363e81e367f4e49f211626bde"},
-    {file = "hypothesis-6.110.2.tar.gz", hash = "sha256:f434fece6e320a6d34bfca6ff9dc988d00d6335147ac038b36b16f0b0bb0b3ce"},
+    {file = "hypothesis-6.111.0-py3-none-any.whl", hash = "sha256:7a51f678da3719a04a3ef61cd241384dd93b49f35d7cce22833745c66ac1d507"},
+    {file = "hypothesis-6.111.0.tar.gz", hash = "sha256:04d0703621d9fdd61c079a4dda07babbe7ebf6d34eee6ad9484a2af0ee721801"},
 ]
 
 [package.dependencies]
@@ -1603,8 +1603,8 @@ forking-recommended = ["ujson"]
 [package.source]
 type = "git"
 url = "https://github.com/vyperlang/titanoboa.git"
-reference = "83c6c51f1752f69ec0189a81521a26f550dc3905"
-resolved_reference = "83c6c51f1752f69ec0189a81521a26f550dc3905"
+reference = "3536aa3d048e19637cade93343d214792865bfb5"
+resolved_reference = "3536aa3d048e19637cade93343d214792865bfb5"
 
 [[package]]
 name = "toolz"
@@ -1743,13 +1743,13 @@ test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
 
 [[package]]
 name = "zipp"
-version = "3.19.2"
+version = "3.20.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "zipp-3.19.2-py3-none-any.whl", hash = "sha256:f091755f667055f2d02b32c53771a7a6c8b47e1fdbc4b72a8b9072b3eef8015c"},
-    {file = "zipp-3.19.2.tar.gz", hash = "sha256:bf1dcf6450f873a13e952a29504887c89e6de7506209e5b1bcc3460135d4de19"},
+    {file = "zipp-3.20.0-py3-none-any.whl", hash = "sha256:58da6168be89f0be59beb194da1250516fdaa062ccebd30127ac65d30045e10d"},
+    {file = "zipp-3.20.0.tar.gz", hash = "sha256:0145e43d89664cfe1a2e533adc75adafed82fe2da404b4bbb6b026c0157bdb31"},
 ]
 
 [package.extras]
@@ -1759,4 +1759,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.4"
-content-hash = "9c24534dc5ef2faec0b5878352d813543e5b0d65f3d2ca6fd95e53ae9bc00b32"
+content-hash = "a5ff742808f7e9ab98287510afaecb37ca95de20c81220a00d28f850863e641e"
