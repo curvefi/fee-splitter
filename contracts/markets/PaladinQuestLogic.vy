@@ -79,7 +79,7 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     @notice Posts a bribe on Paladin's Quest
     @dev The data payload is expected to contian the minimum
     and maximum amount of crvUSD that can be distributed per vote.
-    @dev Each bribe will create a new quest, and claim back all 
+    @dev Each bribe will create a new quest, and claim back all
     unspent funds from the previous quest to rollover to the new one.
     """
     ownable._check_owner()

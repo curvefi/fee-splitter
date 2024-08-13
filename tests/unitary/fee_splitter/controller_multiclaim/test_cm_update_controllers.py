@@ -8,13 +8,16 @@ def test_expected_behavior(multiclaim, mock_factory):
 
     def controllers_len():
         """helper to get length of controllers in multiclaim"""
-        return multiclaim.eval('len(self.controllers)')
+        return multiclaim.eval("len(self.controllers)")
 
     def assert_controllers_match():
         """helper to assert controllers in multiclaim and factory match"""
         for i in range(controllers_len()):
-            assert multiclaim.controllers(i) == controllers[
-                i] == factory.controllers(i)
+            assert (
+                multiclaim.controllers(i)
+                == controllers[i]
+                == factory.controllers(i)
+            )
             assert multiclaim.allowed_controllers(controllers[i])
 
     def assert_controllers_length(expected):

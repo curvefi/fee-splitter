@@ -15,7 +15,7 @@ def test_access_control(manager, bribe_manager):
     random_gauge = boa.env.generate_address()
 
     with boa.reverts("access_control: account is missing role"):
-        m.set_gauge_cap(random_gauge, 10 ** 24)
+        m.set_gauge_cap(random_gauge, 10**24)
 
 
 def test_cap_too_big(manager, bribe_manager):

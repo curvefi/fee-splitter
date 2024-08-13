@@ -1,4 +1,4 @@
-# Autobribe 
+# Autobribe
 
 Procotol aligned CRV emissions.
 

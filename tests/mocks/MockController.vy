@@ -22,4 +22,3 @@ def collect_fees() -> uint256:
 @external
 def admin_fees() -> uint256:
     return 5678
-

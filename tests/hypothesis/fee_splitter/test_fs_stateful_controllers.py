@@ -1,9 +1,8 @@
 import boa
-from hypothesis import note, settings
-from hypothesis.stateful import rule, invariant
+from hypothesis.stateful import invariant, rule
 
 from tests.hypothesis.fee_splitter.stateful_base import FeeSplitterStatefulBase
-from tests.hypothesis.strategies import fee_splitters, controllers
+from tests.hypothesis.strategies import controllers
 
 
 class ControllerUpdate(FeeSplitterStatefulBase):
@@ -15,12 +14,11 @@ class ControllerUpdate(FeeSplitterStatefulBase):
     def update_controllers_rule(self):
         self.update_controllers()
 
-
     @invariant()
     def controllers_match(self):
         assert self.factory.n_collaterals() == len(self.factory_controllers)
 
-        fs_n_controllers = self.fs.eval('len(multiclaim.controllers)')
+        fs_n_controllers = self.fs.eval("len(multiclaim.controllers)")
         if self.is_updated:
             assert self.factory.n_collaterals() == fs_n_controllers
             assert self.factory.n_collaterals() == len(self.fs_controllers)

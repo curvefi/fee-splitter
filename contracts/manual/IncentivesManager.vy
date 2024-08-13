@@ -169,7 +169,7 @@ def _update_incentive(gauge: address, amount: uint256, data: Bytes[MAX_DATA_SIZE
     self.total_incentives += amount
     self.amount_for_gauge[gauge] = amount
     self.data_for_gauge[gauge] = data
-        
+
 
 @external
 def confirm_batch():
@@ -181,7 +181,7 @@ def confirm_batch():
     assert len(self.pending_gauges) > 0, "manager: no incentives batched"
 
     self.incentives_locked = True
-    
+
     log UpdateIncentivesState(True)
 
 @external

@@ -1,5 +1,4 @@
 import boa
-import pytest
 
 
 def test_expected_behavior_default(multiclaim_with_controllers, crvusd):
@@ -40,7 +39,6 @@ def test_expected_behavior_powerset(multiclaim_with_controllers):
                     assert c.eval("self.collect_counter") == 1
                 else:
                     assert c.eval("self.collect_counter") == 0
-
 
 
 def test_random_addy(multiclaim):

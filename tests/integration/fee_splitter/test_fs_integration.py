@@ -1,4 +1,3 @@
-import boa
 from tests.mocks import MockController
 
 
@@ -28,6 +27,9 @@ def test_claim_fees(fee_splitter_with_controllers, factory, crvusd):
         assert MockController.at(factory.controllers(i)).admin_fees() == 0
 
     total_balance_dispatched = sum(
-        [crvusd.balanceOf(factory.controllers(i)) for i in
-         range(factory.n_collaterals())])
+        [
+            crvusd.balanceOf(factory.controllers(i))
+            for i in range(factory.n_collaterals())
+        ]
+    )
     assert total_balance_dispatched == total_balance_to_claim

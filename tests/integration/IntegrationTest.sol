@@ -33,7 +33,7 @@ contract IntegrationTest is Test {
 
     IIncentivesManager public im;
     ICrvUSD crvUSD;
-    address[] gauges; 
+    address[] gauges;
 
     function setUp() virtual public {
         vm.createSelectFork("https://ethereum-rpc.publicnode.com", 20382333);
@@ -90,5 +90,3 @@ contract IntegrationTest is Test {
         crvUSD = ICrvUSD(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
     }
 }
-
-

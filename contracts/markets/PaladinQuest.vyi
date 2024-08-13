@@ -28,4 +28,3 @@ def questWithdrawableAmount(questID: uint256) -> uint256:
 @external
 def customPlatformFeeRatio(creator: address) -> uint256:
     ...
-    

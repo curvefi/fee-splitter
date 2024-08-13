@@ -19,7 +19,7 @@ contract StakeDaoLogicTest is VotemarketTest {
 
         vm.prank(bribeManager);
         im.set_gauge_cap(gauge, bribeAmount);
-        
+
         _bribe(gauge, bribeAmount, maxAmountPerVote);
     }
 

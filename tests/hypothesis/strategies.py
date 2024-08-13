@@ -1,11 +1,15 @@
-from boa.contracts.vyper.vyper_contract import VyperContract
-from hypothesis import assume
-from hypothesis.strategies import composite, just, integers, lists, booleans
 import boa
 from boa.test import strategy as boa_st
-from tests.mocks import MockDynamicWeight, MockControllerFactory, MockERC20, MockController
-from contracts.fee_splitter import FeeSplitter
+from hypothesis import assume
+from hypothesis.strategies import booleans, composite, integers, just, lists
 
+from contracts.fee_splitter import FeeSplitter
+from tests.mocks import (
+    MockController,
+    MockControllerFactory,
+    MockDynamicWeight,
+    MockERC20,
+)
 
 address = boa_st("address")
 
@@ -18,10 +22,14 @@ def weights(draw, n):
     @composite
     def sorted_unique_integers(draw):
         # Generate n-1 unique integers between 1 and max_bps-1
-        points = draw(lists(integers(1, max_bps - 1),
-                               min_size=n - 1,
-                               max_size=n - 1,
-                               unique=True))
+        points = draw(
+            lists(
+                integers(1, max_bps - 1),
+                min_size=n - 1,
+                max_size=n - 1,
+                unique=True,
+            )
+        )
         return sorted(points)
 
     # Draw the sorted unique integers
@@ -35,6 +43,7 @@ def weights(draw, n):
 
     return weights
 
+
 @composite
 def receivers(draw, n=0):
     if n == 0:
@@ -46,7 +55,9 @@ def receivers(draw, n=0):
     receivers_list = []
     for i in range(n):
         if is_dynamic[i]:
-            receivers_list.append((MockDynamicWeight().address, _weights[i], True))
+            receivers_list.append(
+                (MockDynamicWeight().address, _weights[i], True)
+            )
         else:
             receiver_address = draw(address)
             assume(receiver_address != zero)
@@ -54,7 +65,9 @@ def receivers(draw, n=0):
 
     return receivers_list
 
+
 crvusd = just(MockERC20())
+
 
 @composite
 def fee_splitters(draw):
@@ -67,10 +80,12 @@ def fee_splitters(draw):
 
     return FeeSplitter(_crvusd, _factory, _receivers, _owner)
 
+
 @composite
 def controllers(draw):
     _crvusd = draw(crvusd)
     return MockController(_crvusd)
+
 
 if __name__ == "__main__":
     print(controllers().example())

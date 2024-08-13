@@ -53,5 +53,3 @@ def increaseBountyDuration(
 @external
 def closeBounty(bountyId: uint256):
     self.close_id = bountyId
-
-

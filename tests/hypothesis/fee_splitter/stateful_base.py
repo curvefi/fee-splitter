@@ -1,9 +1,12 @@
-from hypothesis.stateful import RuleBasedStateMachine, rule, invariant, initialize
-from tests.hypothesis.strategies import fee_splitters, controllers, crvusd
-from tests.mocks import MockControllerFactory, MockDynamicWeight
+import random
+
 import boa
 from hypothesis import note
-import random
+from hypothesis.stateful import RuleBasedStateMachine, initialize
+
+from tests.hypothesis.strategies import controllers, crvusd, fee_splitters
+from tests.mocks import MockControllerFactory, MockDynamicWeight
+
 
 class FeeSplitterStatefulBase(RuleBasedStateMachine):
     @initialize(fs=fee_splitters(), controller=controllers(), _crvusd=crvusd)
@@ -12,7 +15,9 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
 
         # setup for controllers test
         self.fs = fs
-        self.factory = MockControllerFactory.at(fs.eval("multiclaim.factory.address"))
+        self.factory = MockControllerFactory.at(
+            fs.eval("multiclaim.factory.address")
+        )
 
         self.fs_controllers = []
         self.factory_controllers = []
@@ -36,6 +41,7 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
 
     def randomize_dynamic_weights(self):
         note("[RANDOMIZE WEIGHTS]")
+
         def generate_random_weight(center, min_val=1, max_val=10000):
             # Ensure center is within the valid range
             center = max(min_val, min(center, max_val))
@@ -55,7 +61,6 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
             if dynamic:
                 new_weight = generate_random_weight(weight)
                 MockDynamicWeight.at(addr).set_weight(new_weight)
-
 
     def dispatch_fees(self):
         note("[DISPATCH]")
@@ -82,19 +87,18 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
         #
         # note(f"{fees_after_claim=}")
         #
-        # delta = [abs(after - before) for after, before in zip(fees_after_claim, fees_before_claim)]
+        # delta = [abs(after - before) for after,
+        # before in zip(fees_after_claim, fees_before_claim)]
         # note(f"{delta=}")
         # note(f"{sum(delta)=}")
         # received_amount = sum(delta)
         # assert fs_after_claim - fs_after_claim == received_amount
-
 
     def set_receivers(self, receivers):
         note("[SET_RECEIVERS]")
         with boa.env.prank(self.fs.owner()):
             self.fs.set_receivers(receivers)
         self.receivers = receivers
-
 
     def update_controllers(self):
         note("[UPDATE_CONTROLLERS]")

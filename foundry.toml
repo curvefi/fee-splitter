@@ -8,6 +8,3 @@ libs = ["lib", ".venv/lib/python3.12/site-packages"]
 # You need vyper to be in your PATH environment
 # variable for this to work
 path = "vyper"
-
-
-

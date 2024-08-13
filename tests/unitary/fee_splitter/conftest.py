@@ -1,5 +1,6 @@
-from pytest import fixture
 import boa
+from pytest import fixture
+
 
 @fixture
 def owner():
@@ -9,23 +10,28 @@ def owner():
 @fixture
 def fee_splitter_deployer():
     from contracts.fee_splitter import FeeSplitter
+
     return FeeSplitter
 
 
 @fixture()
 def mock_factory():
     from tests.mocks import MockControllerFactory
+
     return MockControllerFactory()
 
 
 @fixture
 def mock_controller_deployer():
     from tests.mocks import MockController
+
     return MockController
+
 
 @fixture
 def mock_dynamic_weight_deployer():
     from tests.mocks import MockDynamicWeight
+
     return MockDynamicWeight
 
 
@@ -34,18 +40,25 @@ def receivers(request, mock_dynamic_weight_deployer):
     receivers_possibilities = [
         [(mock_dynamic_weight_deployer().address, 10_000, True)],
         [(boa.env.generate_address(), 10_000, False)],
-        [(boa.env.generate_address(), 7_000, False), (mock_dynamic_weight_deployer().address, 3_000, True)]
+        [
+            (boa.env.generate_address(), 7_000, False),
+            (mock_dynamic_weight_deployer().address, 3_000, True),
+        ],
     ]
     return receivers_possibilities[request.param]
 
 
-
 @fixture
-def fee_splitter(fee_splitter_deployer, crvusd, receivers, mock_factory, owner):
+def fee_splitter(
+    fee_splitter_deployer, crvusd, receivers, mock_factory, owner
+):
     return fee_splitter_deployer(crvusd, mock_factory, receivers, owner)
 
+
 @fixture
-def fee_splitter_with_controllers(fee_splitter, mock_factory, mock_controller_deployer):
+def fee_splitter_with_controllers(
+    fee_splitter, mock_factory, mock_controller_deployer
+):
     mock_controllers = [mock_controller_deployer() for _ in range(10)]
     for c in mock_controllers:
         mock_factory.add_controller(c)
