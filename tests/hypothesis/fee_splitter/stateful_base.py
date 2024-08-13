@@ -2,7 +2,7 @@ import random
 
 import boa
 from hypothesis import note
-from hypothesis.stateful import RuleBasedStateMachine, initialize
+from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant
 
 from tests.hypothesis.strategies import controllers, crvusd, fee_splitters
 from tests.mocks import MockControllerFactory, MockDynamicWeight
@@ -99,9 +99,17 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
         with boa.env.prank(self.fs.owner()):
             self.fs.set_receivers(receivers)
         self.receivers = receivers
+        self.claimed_since_receivers_change = False
 
     def update_controllers(self):
         note("[UPDATE_CONTROLLERS]")
         self.fs.update_controllers()
         self.is_updated = True
         self.fs_controllers = self.factory_controllers[:]
+
+    @invariant()
+    def accrue_fees(self):
+        # simulate fee accrual which should happen every second
+        # by minting 10**19 after every rule to all controllers.
+        for c in self.fs_controllers:
+            self.crvusd.mint_for_testing(c, 10**19)
