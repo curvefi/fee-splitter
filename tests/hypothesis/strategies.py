@@ -54,21 +54,23 @@ def receivers(draw, n=0):
 
     return receivers_list
 
+crvusd = just(MockERC20())
 
 @composite
 def fee_splitters(draw):
-    crvusd = draw(just(MockERC20()))
+    _crvusd = draw(crvusd)
 
     _factory = MockControllerFactory()
     _receivers = draw(receivers())
     _owner = draw(address)
     assume(_owner != zero)
 
-    return FeeSplitter(crvusd, _factory, _receivers, _owner)
+    return FeeSplitter(_crvusd, _factory, _receivers, _owner)
 
 @composite
 def controllers(draw):
-    return MockController()
+    _crvusd = draw(crvusd)
+    return MockController(_crvusd)
 
 if __name__ == "__main__":
     print(controllers().example())

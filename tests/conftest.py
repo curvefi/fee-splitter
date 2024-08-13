@@ -18,3 +18,8 @@ def token_rescuer():
 @fixture(scope="module")
 def emergency_admin():
     return boa.env.generate_address()
+
+@fixture(scope="module")
+def erc20_deployer():
+    from tests.mocks import MockERC20
+    return MockERC20
