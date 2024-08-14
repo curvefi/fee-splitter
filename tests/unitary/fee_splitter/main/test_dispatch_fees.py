@@ -62,14 +62,65 @@ def test_dynamic_and_fixed(fee_splitter_with_controllers, crvusd, owner):
     with boa.env.prank(owner):
         fs.set_receivers(receivers)
 
+    weight = MockDynamicWeight.at(receivers[0][0])
+
     for c in controllers:
         c.eval(f"self.mock_receiver = {fs.address}")
         crvusd.mint_for_testing(c, 10**20)
-    fs.dispatch_fees()
 
-    assert sum(crvusd.balanceOf(c) for c in controllers) == 0
-    assert crvusd.balanceOf(fs) == 0
+    # case 1: weight is less than cap
+    weight.set_weight(5_000)
 
-    # total_claimed = 10**20 * len(controllers)
-    # assert crvusd.balanceOf(receivers[0][0]) ==
-    # assert crvusd.balanceOf(receivers[1][0]) == 10**20*len(controllers)
+    with boa.env.anchor():
+        fs.dispatch_fees()
+
+        assert sum(crvusd.balanceOf(c) for c in controllers) == 0
+        assert crvusd.balanceOf(fs) == 0
+
+        total_claimed = 10**20 * len(controllers)
+        assert (
+            crvusd.balanceOf(receivers[0][0])
+            == total_claimed * 5_000 // 10_000
+        )
+        assert (
+            crvusd.balanceOf(receivers[1][0])
+            == total_claimed * 5_000 // 10_000
+        )
+
+    # case 2: weight is same as cap
+    weight.set_weight(7_000)
+
+    with boa.env.anchor():
+        fs.dispatch_fees()
+
+        assert sum(crvusd.balanceOf(c) for c in controllers) == 0
+        assert crvusd.balanceOf(fs) == 0
+
+        total_claimed = 10**20 * len(controllers)
+        assert (
+            crvusd.balanceOf(receivers[0][0])
+            == total_claimed * 7_000 // 10_000
+        )
+        assert (
+            crvusd.balanceOf(receivers[1][0])
+            == total_claimed * 3_000 // 10_000
+        )
+
+    # case 3: weight is more than cap
+    weight.set_weight(9_000)
+
+    with boa.env.anchor():
+        fs.dispatch_fees()
+
+        assert sum(crvusd.balanceOf(c) for c in controllers) == 0
+        assert crvusd.balanceOf(fs) == 0
+
+        total_claimed = 10**20 * len(controllers)
+        assert (
+            crvusd.balanceOf(receivers[0][0])
+            == total_claimed * 7_000 // 10_000
+        )
+        assert (
+            crvusd.balanceOf(receivers[1][0])
+            == total_claimed * 3_000 // 10_000
+        )
