@@ -1,5 +1,4 @@
 import boa
-import pytest
 
 from contracts.markets import PaladinQuestLogic
 
@@ -35,7 +34,6 @@ def test_constructor_invalid(crvusd, quest_market, manager):
         PaladinQuestLogic(crvusd, quest_market, manager, 50_000, 10_000)
 
 
-@pytest.mark.xfail
 def test_create_quest(quest_logic, quest_market, crvusd):
     quest_logic.internal.create_quest(
         gauge := boa.env.generate_address(), 10400000, 10_000, 50_000
