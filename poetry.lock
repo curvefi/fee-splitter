@@ -1603,8 +1603,8 @@ forking-recommended = ["ujson"]
 [package.source]
 type = "git"
 url = "https://github.com/vyperlang/titanoboa.git"
-reference = "3536aa3d048e19637cade93343d214792865bfb5"
-resolved_reference = "3536aa3d048e19637cade93343d214792865bfb5"
+reference = "144977af82077342368fc7c2e9c6e8a9496fe216"
+resolved_reference = "144977af82077342368fc7c2e9c6e8a9496fe216"
 
 [[package]]
 name = "toolz"
@@ -1759,4 +1759,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.4"
-content-hash = "a5ff742808f7e9ab98287510afaecb37ca95de20c81220a00d28f850863e641e"
+content-hash = "d249e9fa119f1b1f4a7bf06be0bbfeb5a3a065cf5a1b3e23756fa7fddd7b1f60"
