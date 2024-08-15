@@ -12,7 +12,7 @@ Curve Pools and Llamalend Vaults containing crvUSD automatically receive bribes 
 
 This makes crvUSD a desirable token for pairing on Curve, as it provides free emissions to pools containing it, proportional to the average amount in the pool. Additionally, incentivizing crvUSD-based pools significantly increases the efficiency multiplier of the bribe.
 
-# Defintions
+# Definitions
 The contracts use the terms "bribes," "voting incentives," and "bounties" interchangeably to refer to the action of granting rewards when a veCRV holder votes for a designated gauge.
 
 # Trust assumptions
