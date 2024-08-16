@@ -38,11 +38,11 @@ def mock_dynamic_weight_deployer():
 @fixture(params=range(3))
 def receivers(request, mock_dynamic_weight_deployer):
     receivers_possibilities = [
-        [(mock_dynamic_weight_deployer().address, 10_000, True)],
-        [(boa.env.generate_address(), 10_000, False)],
+        [(mock_dynamic_weight_deployer().address, 10_000)],
+        [(boa.env.generate_address(), 10_000)],
         [
-            (boa.env.generate_address(), 7_000, False),
-            (mock_dynamic_weight_deployer().address, 3_000, True),
+            (boa.env.generate_address(), 7_000),
+            (mock_dynamic_weight_deployer().address, 3_000),
         ],
     ]
     return receivers_possibilities[request.param]

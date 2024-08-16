@@ -4,11 +4,11 @@ from tests.mocks import MockDynamicWeight
 
 
 def fixed(percentage):
-    return boa.env.generate_address(), percentage, False
+    return boa.env.generate_address(), percentage
 
 
 def dynamic(percentage):
-    return MockDynamicWeight().address, percentage, True
+    return MockDynamicWeight().address, percentage
 
 
 # @pytest.mark.gas_profile

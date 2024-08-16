@@ -10,13 +10,12 @@ def test_expected_behavior(
 
     splitter = fee_splitter_deployer(crvusd, factory, receivers, owner)
 
-    for j, (expected_addy, expected_weight, expected_dynamic) in enumerate(
-        receivers
-    ):
-        address, weight, dynamic = splitter.receivers(j)
+    for j, (expected_addy, expected_weight) in enumerate(receivers):
+        address, weight = splitter.receivers(j)
         assert address == expected_addy
         assert weight == expected_weight
-        assert dynamic == expected_dynamic
+        # TODO check this somehow
+        # assert dynamic == expected_dynamic
     assert splitter._immutables.crvusd == crvusd
     assert splitter.eval("multiclaim.factory.address") == factory
     assert splitter.owner() == owner
@@ -31,14 +30,14 @@ def test_zero_address(fee_splitter_deployer):
 
     with boa.reverts("zeroaddr: crvusd"):
         fee_splitter_deployer(
-            zero, factory, [(boa.env.generate_address(), 1, False)], owner
+            zero, factory, [(boa.env.generate_address(), 1)], owner
         )
     # sanity check since modules are pretty recent
     with boa.reverts("zeroaddr: factory"):
         fee_splitter_deployer(
-            crvusd, zero, [(boa.env.generate_address(), 1, False)], owner
+            crvusd, zero, [(boa.env.generate_address(), 1)], owner
         )
     with boa.reverts("zeroaddr: owner"):
         fee_splitter_deployer(
-            crvusd, factory, [(boa.env.generate_address(), 1, False)], zero
+            crvusd, factory, [(boa.env.generate_address(), 1)], zero
         )

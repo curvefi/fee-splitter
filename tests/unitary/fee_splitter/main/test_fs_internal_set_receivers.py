@@ -3,13 +3,13 @@ import boa
 
 def test_total_weight_less_than_max(fee_splitter):
     receivers_too_much = [
-        (boa.env.generate_address(), 7_001, False),
-        (boa.env.generate_address(), 3_000, False),
+        (boa.env.generate_address(), 7_001),
+        (boa.env.generate_address(), 3_000),
     ]
 
     receivers_not_enough = [
-        (boa.env.generate_address(), 6_999, False),
-        (boa.env.generate_address(), 3_000, False),
+        (boa.env.generate_address(), 6_999),
+        (boa.env.generate_address(), 3_000),
     ]
 
     with boa.reverts("receivers: total weight != MAX_BPS"):
@@ -25,10 +25,10 @@ def test_no_receiver(fee_splitter, crvusd, mock_factory, owner):
 
 
 def test_constructor_invalid_weights(fee_splitter):
-    zero_receivers = [(boa.env.generate_address(), 0, False)]
+    zero_receivers = [(boa.env.generate_address(), 0)]
     with boa.reverts("receivers: invalid weight"):
         fee_splitter.internal._set_receivers(zero_receivers)
 
-    more_than_max_receivers = [(boa.env.generate_address(), 10_001, False)]
+    more_than_max_receivers = [(boa.env.generate_address(), 10_001)]
     with boa.reverts("receivers: invalid weight"):
         fee_splitter.internal._set_receivers(more_than_max_receivers)
