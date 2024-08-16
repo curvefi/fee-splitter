@@ -30,7 +30,6 @@ event SetReceivers: pass
 struct Receiver:
     addr: address
     weight: uint256
-    dynamic: bool
 
 version: public(constant(String[8])) = "0.1.0" # no guarantees on abi stability
 
@@ -94,7 +93,6 @@ def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
         assert r.addr != empty(address), "zeroaddr: receivers"
         assert r.weight > 0 and r.weight <= MAX_BPS, "receivers: invalid weight"
         total_weight += r.weight
-        assert r.dynamic == self._is_dynamic(r.addr), "receivers: dynamic mismatch"
     assert total_weight == MAX_BPS, "receivers: total weight != MAX_BPS"
 
     self.receivers = receivers
@@ -122,7 +120,7 @@ def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CO
     for r: Receiver in self.receivers:
         weight: uint256 = r.weight
 
-        if r.dynamic:
+        if self._is_dynamic(r.addr):
             dynamic_weight: uint256 = staticcall DynamicWeight(r.addr).weight()
 
             # weight acts as a cap to the dynamic weight
