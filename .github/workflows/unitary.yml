@@ -20,7 +20,7 @@ jobs:
           python-version: 3.12.4
 
       - name: Install Requirements
-        run: poetry install --group dev
+        run: poetry install --with dev
 
       - name: Run Tests
         run: python -m pytest tests/unitary -n auto
