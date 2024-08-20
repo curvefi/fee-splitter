@@ -59,3 +59,8 @@ def update_controllers():
         c: Controller = Controller(staticcall factory.controllers(i_shifted))
         self.allowed_controllers[c] = True
         self.controllers.append(c)
+
+@view
+@external
+def n_controllers() -> uint256:
+    return len(self.controllers)
