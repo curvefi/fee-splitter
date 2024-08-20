@@ -27,6 +27,10 @@ event SetWeights:
 
 event SetReceivers: pass
 
+event FeeDispatched:
+    receiver: address
+    weight: uint256
+
 struct Receiver:
     addr: address
     weight: uint256
@@ -132,6 +136,8 @@ def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CO
             weight += excess
 
         extcall crvusd.transfer(r.addr, balance * weight // MAX_BPS)
+
+        log FeeDispatched(r.addr, weight)
         i += 1
 
 
