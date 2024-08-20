@@ -1,5 +1,14 @@
 # pragma version ~=0.4.0
 
+"""
+@title ControllerMulticlaim
+@notice Helper module to claim fees from multiple
+controllers at the same time.
+@license Copyright (c) Curve.Fi, 2020-2024 - all rights reserved
+@author curve.fi
+@custom:security security@curve.fi
+"""
+
 import ControllerFactory
 import Controller
 
@@ -18,6 +27,13 @@ def __init__(_factory: ControllerFactory):
     factory = _factory
 
 def claim_controller_fees(controllers: DynArray[Controller, MAX_CONTROLLERS]):
+    """
+    @notice Claims admin fees from a list of controllers.
+    @param controllers The list of controllers to claim fees from.
+    @dev For the claim to succeed, the controller must be in the list of
+        allowed controllers. If the list of controllers is empty, all
+        controllers in the factory are claimed from.
+    """
     if len(controllers) == 0:
         for c: Controller in self.controllers:
             extcall c.collect_fees()
@@ -32,7 +48,9 @@ def claim_controller_fees(controllers: DynArray[Controller, MAX_CONTROLLERS]):
 def update_controllers():
     """
     @notice Update the list of controllers so that it corresponds to the
-        list of controllers in the factory
+        list of controllers in the factory.
+    @dev The list of controllers can only add new controllers from the
+        factory when updated.
     """
     old_len: uint256 = len(self.controllers)
     new_len: uint256 = staticcall factory.n_collaterals()
