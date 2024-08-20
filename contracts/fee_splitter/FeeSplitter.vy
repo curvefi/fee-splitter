@@ -145,6 +145,18 @@ def set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
 
     self._set_receivers(receivers)
 
+@view
+@external
+def excess_receiver() -> address:
+    """
+    @notice Get the excess receiver, that is the receiver
+        that, on top of his weight, will receive an additional
+        weight if other receivers (with a dynamic weight) ask
+        for less than their cap.
+    @return The address of the excess receiver.
+    """
+    receivers_length: uint256 = len(self.receivers)
+    return self.receivers[receivers_length - 1].addr
 
 @view
 @external
