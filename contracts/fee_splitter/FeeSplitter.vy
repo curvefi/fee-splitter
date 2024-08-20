@@ -2,7 +2,6 @@
 
 """
 @title FeeSplitter
-TODO update this to reflect module separation
 @notice A contract that collects fees from multiple crvUSD controllers
 in a single transaction and distributes them according to some weights.
 @license Copyright (c) Curve.Fi, 2020-2024 - all rights reserved
@@ -75,9 +74,14 @@ def __init__(_crvusd: IERC20, _factory: multiclaim.ControllerFactory, receivers:
 
 def _is_dynamic(addr: address) -> bool:
     """
-    @notice Check if the address supports the dynamic weight interface
-    @param addr The address to check
-    @return True if the address supports the dynamic weight interface
+    This function covers the following cases without reverting:
+    1. The address is an EIP-165 compliant contract that supports
+        the dynamic weight interface (returns True).
+    2. The address is a contract that does not comply to EIP-165
+        (returns False).
+    3. The address is an EIP-165 compliant contract that does not
+        support the dynamic weight interface (returns False).
+    4. The address is an EOA (returns False).
     """
     success: bool = False
     response: Bytes[32] = b""
@@ -127,11 +131,14 @@ def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CO
         if self._is_dynamic(r.addr):
             dynamic_weight: uint256 = staticcall DynamicWeight(r.addr).weight()
 
-            # weight acts as a cap to the dynamic weight
+            # `weight` acts as a cap to the dynamic weight, preventing
+            # receivers to ask for more than what they are allowed to.
             if dynamic_weight < weight:
                 excess += weight - dynamic_weight
                 weight = dynamic_weight
 
+        # if we're at the last iteration, it means `r` is the excess
+        # receiver, therefore we add the excess to its weight.
         if i == len(self.receivers) - 1:
             weight += excess
 
@@ -144,8 +151,10 @@ def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CO
 @external
 def set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
     """
-    @notice Set the receivers
-    @param receivers The new receivers
+    @notice Set the receivers, the last one is the excess receiver.
+    @param receivers The new receivers's list.
+    @dev The excess receiver is always the last element in the
+        `self.receivers` array.
     """
     ownable._check_owner()
 
