@@ -55,13 +55,11 @@ def receivers(draw, n=0):
     receivers_list = []
     for i in range(n):
         if is_dynamic[i]:
-            receivers_list.append(
-                (MockDynamicWeight().address, _weights[i], True)
-            )
+            receivers_list.append((MockDynamicWeight().address, _weights[i]))
         else:
             receiver_address = draw(address)
             assume(receiver_address != zero)
-            receivers_list.append((draw(address), _weights[i], False))
+            receivers_list.append((draw(address), _weights[i]))
 
     return receivers_list
 
