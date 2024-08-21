@@ -15,33 +15,43 @@ contract MulticlaimTest is FeeSplitterTest {
         assertEq(fs.n_controllers(), 6);
     }
 
-    function test_claimFees() public {
+    function test_claimFeesOneByOne() public {
         fs.update_controllers();
-        //     for i in range(factory.n_collaterals()):
-        //        admin_fees = MockController.at(factory.controllers(i)).admin_fees()
-        //        assert admin_fees != 0
-        //        total_balance_to_claim += admin_fees
 
         uint256 totalClaimable = 0;
-
-        for (uint256 i = 0; i < fs.n_controllers(); i++) {
-            uint256 adminFees = IController(fs.controllers(i)).admin_fees();
-            assertNotEq(adminFees, 0);
-            totalClaimable += adminFees;
-        }
-
-        fs.dispatch_fees();
-
-        for (uint256 i = 0; i < fs.n_controllers(); i++) {
-            address controller = fs.controllers(i);
-            assertEq(IController(controller).admin_fees(), 0);
-        }
-
         uint256 totalDispatched = 0;
-        for (uint256 i = 0; i < fs.n_receivers(); i++) {
+
+        // caching values to reduce call tree verbosity
+        uint256 n_controllers = fs.n_controllers();
+        uint256 n_receivers = fs.n_receivers();
+
+        for (uint256 i = 0; i < n_controllers; i++) {
+            IController controller = IController(fs.controllers(i));
+            uint256 adminFees = controller.admin_fees();
+            assertNotEq(adminFees, 0, "reported admin fees before claim are zero");
+            totalClaimable += adminFees;
+
+            address[] memory claim_target = new address[](1);
+            claim_target[0] = address(controller);
+            fs.dispatch_fees(claim_target);
+
+            assertEq(controller.admin_fees(), 0, "reported admin fees after claim aren't zero");
+            assertApproxEqAbs(crvUSD.balanceOf(address(fs)), 0, 1, "there is some dust left in the fee splitter");
+        }
+
+        for (uint256 i = 0; i < n_receivers; i++) {
             totalDispatched += crvUSD.balanceOf(fs.receivers(i).addr);
         }
 
-        assertEq(totalDispatched, totalClaimable);
+        for (uint256 i = 0; i < n_receivers; i++) {
+            uint256 receiverAmount = totalDispatched * fs.receivers(i).percentage / 10_000;
+            assertApproxEqRel(
+                crvUSD.balanceOf(fs.receivers(i).addr), receiverAmount, 2, "amounts not dispatched correctly"
+            );
+        }
+        // we allow an off by 1 per controller
+        assertApproxEqAbs(
+            totalDispatched, totalClaimable, n_controllers, "total claimed doesn't correspond with actual balance"
+        );
     }
 }

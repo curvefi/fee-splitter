@@ -15,23 +15,30 @@ interface IFeeSplitter {
     function n_receivers() external view returns (uint256);
     function receivers(uint256 index) external view returns (Receiver memory);
     function dispatch_fees() external;
+    function dispatch_fees(address[] calldata controllers) external;
 }
 
 interface IController {
     function admin_fees() external view returns (uint256);
 }
 
+interface IFactory {
+    function admin() external view returns (address);
+    function fee_receiver() external view returns (address);
+    function set_fee_receiver(address receiver) external;
+}
+
 contract FeeSplitterTest is IntegrationTest {
     IFeeSplitter fs;
     address dao;
-    address controllerFactory;
+    IFactory controllerFactory;
     address[] currentControllers;
 
     function setUp() public override {
         IntegrationTest.setUp();
         // TODO is this admin actually the dao?
         dao = 0x40907540d8a6C65c637785e8f8B742ae6b0b9968;
-        controllerFactory = 0xC9332fdCB1C491Dcc683bAe86Fe3cb70360738BC;
+        controllerFactory = IFactory(0xC9332fdCB1C491Dcc683bAe86Fe3cb70360738BC);
 
         currentControllers.push(0x8472A9A7632b173c8Cf3a86D3afec50c35548e76);
         currentControllers.push(0x100dAa78fC509Db39Ef7D04DE0c1ABD299f4C6CE);
@@ -45,5 +52,7 @@ contract FeeSplitterTest is IntegrationTest {
         receivers[1] = Receiver({addr: makeAddr("receiver1"), percentage: 3_000});
         bytes memory feeSplitterArgs = abi.encode(address(crvUSD), address(controllerFactory), receivers, dao);
         fs = IFeeSplitter(deployCode("FeeSplitter", feeSplitterArgs));
+        vm.prank(controllerFactory.admin());
+        controllerFactory.set_fee_receiver(address(fs));
     }
 }

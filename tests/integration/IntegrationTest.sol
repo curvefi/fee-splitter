@@ -35,7 +35,8 @@ contract IntegrationTest is Test {
     address[] gauges;
 
     function setUp() public virtual {
-        vm.createSelectFork("https://rpc.ankr.com/eth", 20382333);
+        string memory rpc = vm.rpcUrl("mainnet");
+        vm.createSelectFork(rpc, 20175100);
 
         bribeManager = makeAddr("BRIBE_MANAGER");
         bribeProposer = makeAddr("BRIBE_PROPOSER");
