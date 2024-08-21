@@ -23,7 +23,12 @@ contract StakeDaoLogicTest is VotemarketTest {
         _bribe(gauge, bribeAmount, maxAmountPerVote);
     }
 
-    function testFuzz_secondCall(uint256 firstBribeAmount, uint256 firstMaxAmountPerVote, uint256 secondBribeAmount, uint256 secondMaxAmountPerVote) public {
+    function testFuzz_secondCall(
+        uint256 firstBribeAmount,
+        uint256 firstMaxAmountPerVote,
+        uint256 secondBribeAmount,
+        uint256 secondMaxAmountPerVote
+    ) public {
         vm.assume(firstBribeAmount > 0 && firstBribeAmount < 1e22);
         vm.assume(firstMaxAmountPerVote > 0);
         vm.assume(secondBribeAmount > 0 && secondBribeAmount < 1e22);
@@ -56,12 +61,11 @@ contract StakeDaoLogicTest is VotemarketTest {
 
     function testFuzz_multipleCalls(uint64 numberOfCalls) external {
         // We limit to prevent uint8 overflow for periods
-        vm.assume(numberOfCalls > 1 && numberOfCalls < 2**7);
+        vm.assume(numberOfCalls > 1 && numberOfCalls < 2 ** 7);
         uint256 bribeAmount = 1000;
         uint256 maxAmountPerVote = 100;
 
         address gauge = gauges[numberOfCalls % gauges.length];
-
 
         vm.expectCall(
             address(_vm),

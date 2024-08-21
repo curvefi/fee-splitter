@@ -13,7 +13,9 @@ interface IQuest {
         QuestCloseType closeType;
     }
 
-        /** @notice Struct holding the parameters of the Quest common for all periods */
+    /**
+     * @notice Struct holding the parameters of the Quest common for all periods
+     */
     struct Quest {
         // Address of the Quest creator (caller of createQuest() method)
         address creator;
@@ -93,7 +95,7 @@ interface IQuest {
     event EmergencyWithdraw(uint256 indexed questID, address recipient, uint256 amount);
     event ExtendQuestDuration(uint256 indexed questID, uint256 addedDuration, uint256 addedRewardAmount);
     event Init(address distributor);
-//    event Killed(uint256 killTime);
+    //    event Killed(uint256 killTime);
     event MinObjectiveUpdated(uint256 oldMinObjective, uint256 newMinObjective);
     event NewPendingOwner(address indexed previousPendingOwner, address indexed newPendingOwner);
     event NewQuest(

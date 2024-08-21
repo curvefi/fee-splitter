@@ -14,10 +14,11 @@ contract QuestTest is IntegrationTest {
     IQuestLogic public questLogic;
     IQuest public quest;
 
-    function setUp() override public {
+    function setUp() public override {
         IntegrationTest.setUp();
         quest = IQuest(0xAa1698f0A51e6d00F5533cc3E5D36010ee4558C6);
-        bytes memory incentivesManagerArgs = abi.encode(address(crvUSD), bribeManager, bribeProposer, tokenRescuer, emergencyAdmin);
+        bytes memory incentivesManagerArgs =
+            abi.encode(address(crvUSD), bribeManager, bribeProposer, tokenRescuer, emergencyAdmin);
         im = IIncentivesManager(deployCode("IncentivesManager", incentivesManagerArgs));
         bytes memory questLogicArgs = abi.encode(address(crvUSD), address(quest), address(im));
         questLogic = IQuestLogic(deployCode("PaladinQuestLogic", questLogicArgs));
