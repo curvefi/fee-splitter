@@ -4,6 +4,7 @@ out = "out"
 test = "tests/integration"
 libs = ["lib", ".venv/lib/python3.12/site-packages"]
 
+skip = ["**/snekmate/**/*[!c][!k].vy", "**/snekmate/**/*.vyi"] # Skip the compilation of non-mock and interface files.
 evm_version="cancun"
 
 [vyper]
