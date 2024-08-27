@@ -17,6 +17,7 @@
 
 from snekmate.auth import ownable
 from contracts.manual import IBribeLogic
+
 import StakeDaoMarket as Votemarket
 from ethereum.ercs import IERC20
 
@@ -31,14 +32,15 @@ implements: IBribeLogic
 initializes: ownable
 exports: ownable.__interface__
 
-version: public(constant(String[8])) = "0.1.0" # (no guarantees on ABI stability)
+version: public(constant(String[8])) = "0.1.0"  # no guarantees on abi stability
 
 votemarket: public(Votemarket)
 crvusd: public(IERC20)
 bounty_id: public(HashMap[address, uint256])
 
-BRIBE_DURATION: constant(uint8) = 2 # bi-weekly
+BRIBE_DURATION: constant(uint8) = 2  # bi-weekly
 TOKEN_RESCUER: constant(bytes32) = keccak256("TOKEN_RESCUER")
+
 
 @deploy
 def __init__(crvusd: address, votemarket: address, incentives_manager: address):
@@ -89,6 +91,7 @@ def bribe(gauge: address, amount: uint256, data: Bytes[1024]):
     if leftovers > 0:
         extcall self.crvusd.transfer(msg.sender, leftovers)
 
+
 @external
 def close_bounty(bounty_id: uint256, receiver: address):
     """
@@ -101,31 +104,35 @@ def close_bounty(bounty_id: uint256, receiver: address):
         recovered.
     """
     manager: IncentivesManager = IncentivesManager(ownable.owner)
-    assert staticcall manager.hasRole(TOKEN_RESCUER, msg.sender), "access_control: account is missing role"
+    assert staticcall manager.hasRole(
+        TOKEN_RESCUER, msg.sender
+    ), "access_control: account is missing role"
     extcall self.votemarket.closeBounty(bounty_id)
     unclaimed_funds: uint256 = staticcall self.crvusd.balanceOf(self)
     assert unclaimed_funds > 0, "manager: no unclaimed funds to recover"
     extcall self.crvusd.transfer(receiver, unclaimed_funds)
 
 
-def create_bounty(gauge: address, amount: uint256, max_reward_per_vote: uint256) -> uint256:
+def create_bounty(
+    gauge: address, amount: uint256, max_reward_per_vote: uint256
+) -> uint256:
     extcall self.crvusd.approve(self.votemarket.address, amount)
     return extcall self.votemarket.createBounty(
         gauge,
-        self, # this is the manager contract
-        self.crvusd.address, # we only bribe in crvusd
-        BRIBE_DURATION, # we bribe at a bi-weekly frequency
+        self,  # this is the manager contract
+        self.crvusd.address,  # we only bribe in crvusd
+        BRIBE_DURATION,  # we bribe at a bi-weekly frequency
         max_reward_per_vote,
         amount,
         empty(DynArray[address, 1]),
-        True
+        True,
     )
 
-def increase_bounty_duration(bounty_id: uint256, amount: uint256, max_price_per_vote: uint256):
+
+def increase_bounty_duration(
+    bounty_id: uint256, amount: uint256, max_price_per_vote: uint256
+):
     extcall self.crvusd.approve(self.votemarket.address, amount)
     extcall self.votemarket.increaseBountyDuration(
-        bounty_id,
-        BRIBE_DURATION,
-        amount,
-        max_price_per_vote
+        bounty_id, BRIBE_DURATION, amount, max_price_per_vote
     )

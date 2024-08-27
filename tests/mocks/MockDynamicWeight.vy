@@ -6,9 +6,11 @@ implements: IERC165
 
 weight: public(uint256)
 
+
 @external
 def set_weight(amount: uint256):
     self.weight = amount
+
 
 @view
 @external

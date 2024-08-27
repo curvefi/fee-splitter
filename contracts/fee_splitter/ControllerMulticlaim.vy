@@ -20,11 +20,13 @@ controllers: public(DynArray[Controller, MAX_CONTROLLERS])
 # maximum number of claims in a single transaction
 MAX_CONTROLLERS: constant(uint256) = 100
 
+
 @deploy
 def __init__(_factory: ControllerFactory):
     assert _factory.address != empty(address), "zeroaddr: factory"
 
     factory = _factory
+
 
 def claim_controller_fees(controllers: DynArray[Controller, MAX_CONTROLLERS]):
     """
@@ -43,6 +45,7 @@ def claim_controller_fees(controllers: DynArray[Controller, MAX_CONTROLLERS]):
                 raise "controller: not in factory"
             extcall c.collect_fees()
 
+
 @nonreentrant
 @external
 def update_controllers():
@@ -59,6 +62,7 @@ def update_controllers():
         c: Controller = Controller(staticcall factory.controllers(i_shifted))
         self.allowed_controllers[c] = True
         self.controllers.append(c)
+
 
 @view
 @external

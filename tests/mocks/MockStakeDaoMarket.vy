@@ -28,7 +28,8 @@ def createBounty(
     maxRewardPerVote: uint256,
     totalRewardAmount: uint256,
     blacklist: DynArray[address, 100],
-    upgradeable: bool) -> uint256:
+    upgradeable: bool,
+) -> uint256:
     self.creation_gauge = gauge
     self.creation_manager = manager
     self.creation_rewardToken = rewardToken
@@ -39,16 +40,19 @@ def createBounty(
     self.creation_upgradeable = upgradeable
     return 1234
 
+
 @external
 def increaseBountyDuration(
-        _bountyId: uint256,
-        _additionalPeriods: uint8,
-        _increasedAmount: uint256,
-        _newMaxPricePerVote: uint256):
+    _bountyId: uint256,
+    _additionalPeriods: uint8,
+    _increasedAmount: uint256,
+    _newMaxPricePerVote: uint256,
+):
     self.increase_bountyId = _bountyId
     self.increase_additionalPeriods = _additionalPeriods
     self.increase_increasedAmount = _increasedAmount
     self.increase_newMaxPricePerVote = _newMaxPricePerVote
+
 
 @external
 def closeBounty(bountyId: uint256):

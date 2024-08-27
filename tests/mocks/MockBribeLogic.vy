@@ -8,17 +8,21 @@ implements: IBribeLogic
 token: IERC20
 manager: address
 
+
 struct IncentivePayload:
-    gauge: address
-    amount: uint256
-    data: Bytes[1024]
+        gauge: address
+        amount: uint256
+        data: Bytes[1024]
+
 
 received_payloads: public(DynArray[IncentivePayload, 1000])
+
 
 @deploy
 def __init__(token: address, manager: address):
     self.token = IERC20(token)
     self.manager = manager
+
 
 @external
 def bribe(gauge: address, amount: uint256, data: Bytes[1024]):

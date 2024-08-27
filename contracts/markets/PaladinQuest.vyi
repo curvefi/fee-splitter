@@ -8,21 +8,23 @@ def createRangedQuest(
     maxRewardPerVote: uint256,
     totalRewardAmount: uint256,
     feeAmount: uint256,
-    voteType: uint8, # QuestDataTypes.QuestVoteType : 0 == normal, 1 == blacklist, 2 == whitelist
-    closeType: uint8, # QuestDataTypes.QuestCloseType : 0 == normal, 1 == rollover, 2 == distribute
-    voterList: DynArray[address, 10]) -> uint256:
+    voteType: uint8,  # QuestDataTypes.QuestVoteType : 0 == normal, 1 == blacklist, 2 == whitelist
+    closeType: uint8,  # QuestDataTypes.QuestCloseType : 0 == normal, 1 == rollover, 2 == distribute
+    voterList: DynArray[address, 10],
+) -> uint256:
     ...
 
+
 @external
-def withdrawUnusedRewards(
-    questID: uint256,
-    recipient: address):
+def withdrawUnusedRewards(questID: uint256, recipient: address):
     ...
+
 
 @view
 @external
 def questWithdrawableAmount(questID: uint256) -> uint256:
     ...
+
 
 @view
 @external

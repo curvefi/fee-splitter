@@ -7,16 +7,20 @@ def createBounty(
     max_reward_per_vote: uint256,
     total_reward_amount: uint256,
     blacklist: DynArray[address, 100],
-    upgradeable: bool) -> uint256:
+    upgradeable: bool,
+) -> uint256:
     ...
+
 
 @external
 def increaseBountyDuration(
-        bounty_id: uint256,
-        additionnal_periods: uint8,
-        increased_amount: uint256,
-        new_max_price_per_vote: uint256):
+    bounty_id: uint256,
+    additionnal_periods: uint8,
+    increased_amount: uint256,
+    new_max_price_per_vote: uint256,
+):
     ...
+
 
 @external
 def closeBounty(bounty_id: uint256):

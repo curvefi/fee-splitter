@@ -21,6 +21,7 @@ quest_withdrawable_amount: public(HashMap[uint256, uint256])
 
 custom_fee_ratio: public(HashMap[address, uint256])
 
+
 @external
 def createRangedQuest(
     gauge: address,
@@ -31,9 +32,10 @@ def createRangedQuest(
     maxRewardPerVote: uint256,
     totalRewardAmount: uint256,
     feeAmount: uint256,
-    voteType: uint8, # QuestDataTypes.QuestVoteType : 0 == normal, 1 == blacklist, 2 == whitelist
-    closeType: uint8, # QuestDataTypes.QuestCloseType : 0 == normal, 1 == rollover, 2 == distribute
-    voterList: DynArray[address, 10]) -> uint256:
+    voteType: uint8,  # QuestDataTypes.QuestVoteType : 0 == normal, 1 == blacklist, 2 == whitelist
+    closeType: uint8,  # QuestDataTypes.QuestCloseType : 0 == normal, 1 == rollover, 2 == distribute
+    voterList: DynArray[address, 10],
+) -> uint256:
     self.creation_creator = msg.sender
     self.creation_gauge = gauge
     self.creation_rewardToken = rewardToken
@@ -45,35 +47,37 @@ def createRangedQuest(
     self.creation_feeAmount = feeAmount
     self.creation_voteType = voteType
     self.creation_closeType = closeType
-    #self.creation_blacklist = voterList
-    if(len(voterList) > 0):
+    # self.creation_blacklist = voterList
+    if len(voterList) > 0:
         for i: uint256 in range(10):
             self.creation_blacklist.append(voterList[i])
-            if(i == len(voterList) - 1):
+            if i == len(voterList) - 1:
                 break
-
     return 99
 
+
 @external
-def withdrawUnusedRewards(
-    questID: uint256,
-    recipient: address):
+def withdrawUnusedRewards(questID: uint256, recipient: address):
     self.quest_withdrawable_amount[questID] = 0
     self.withdraw_id = questID
+
 
 @view
 @external
 def questWithdrawableAmount(questID: uint256) -> uint256:
     return self.quest_withdrawable_amount[questID]
 
+
 @external
 def setQuestWithdrawableAmount(questID: uint256, amount: uint256):
     self.quest_withdrawable_amount[questID] = amount
+
 
 @view
 @external
 def customPlatformFeeRatio(creator: address) -> uint256:
     return self.custom_fee_ratio[creator]
+
 
 @external
 def setCustomPlatformFeeRatio(creator: address, ratio: uint256):

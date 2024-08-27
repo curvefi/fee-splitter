@@ -15,36 +15,46 @@
 
 from ethereum.ercs import IERC20
 from ethereum.ercs import IERC165
+
 implements: IERC165
 
 from snekmate.auth.interfaces import IAccessControl
+
 implements: IAccessControl
 
 import IBribeLogic
 
 from snekmate.auth import access_control
+
 initializes: access_control
 
 exports: access_control.__interface__
 
-version: public(constant(String[8])) = "0.1.0" # (no guarantees on ABI stability)
+version: public(constant(String[8])) = "0.1.0"  # no guarantees on abi stability
+
 
 event SetGaugeCap:
     gauge: address
     cap: uint256
 
+
 event SetBribeLogic:
     bribe_logic: address
+
 
 event UpdateIncentivesState:
     locked: bool
 
-struct IncentivePayload:
-    gauge: address
-    amount: uint256
-    data: Bytes[MAX_DATA_SIZE]
 
-MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = 10**23 # 100.000 tokens (crvUSD)
+struct IncentivePayload:
+        gauge: address
+        amount: uint256
+        data: Bytes[MAX_DATA_SIZE]
+
+
+MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = (
+    10**23
+)  # 100.000 tokens (crvUSD)
 MAX_BRIBES: constant(uint256) = 1000
 MAX_DATA_SIZE: constant(uint256) = 1024
 
@@ -68,7 +78,13 @@ incentives_locked: public(bool)
 
 
 @deploy
-def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_proposer: address, token_rescuer: address, emergency_admin: address):
+def __init__(
+    _managed_asset: IERC20,
+    bribe_manager: address,
+    bribe_proposer: address,
+    token_rescuer: address,
+    emergency_admin: address,
+):
     """
     @dev After this function is called ownership of the contract is
         renounced making it impossible.
@@ -98,6 +114,7 @@ def __init__(_managed_asset: IERC20, bribe_manager: address, bribe_proposer: add
     # revoke admin role from deployer
     access_control._revoke_role(access_control.DEFAULT_ADMIN_ROLE, msg.sender)
 
+
 @external
 def set_gauge_cap(gauge: address, cap: uint256):
     """
@@ -121,6 +138,7 @@ def set_gauge_cap(gauge: address, cap: uint256):
 
     log SetGaugeCap(gauge, cap)
 
+
 @external
 def set_bribe_logic(bribe_logic: address):
     """
@@ -138,6 +156,7 @@ def set_bribe_logic(bribe_logic: address):
     self.bribe_logic = IBribeLogic(bribe_logic)
 
     log SetBribeLogic(bribe_logic)
+
 
 @external
 def update_incentives_batch(payloads: DynArray[IncentivePayload, MAX_BRIBES]):
@@ -162,8 +181,12 @@ def update_incentives_batch(payloads: DynArray[IncentivePayload, MAX_BRIBES]):
         self._update_incentive(i.gauge, i.amount, i.data)
 
 
-def _update_incentive(gauge: address, amount: uint256, data: Bytes[MAX_DATA_SIZE]):
-    assert amount > 0 and amount <= self.gauge_caps[gauge], "manager: invalid bribe amount"
+def _update_incentive(
+    gauge: address, amount: uint256, data: Bytes[MAX_DATA_SIZE]
+):
+    assert (
+        amount > 0 and amount <= self.gauge_caps[gauge]
+    ), "manager: invalid bribe amount"
 
     self.pending_gauges.append(gauge)
     self.total_incentives += amount
@@ -184,6 +207,7 @@ def confirm_batch():
 
     log UpdateIncentivesState(True)
 
+
 @external
 def cancel_batch():
     """
@@ -197,6 +221,7 @@ def cancel_batch():
 
     log UpdateIncentivesState(False)
 
+
 @external
 def post_incentives():
     """
@@ -205,17 +230,23 @@ def post_incentives():
         as long as the `BRIBE_PROPOSER` has designated the incentives
         and confirmed the batch.
     """
-    assert not access_control.hasRole[BRIBE_PROPOSER][msg.sender], "manager: proposer can't post"
+    assert not access_control.hasRole[BRIBE_PROPOSER][
+        msg.sender
+    ], "manager: proposer can't post"
     assert self.incentives_locked, "manager: batch yet to be confirmed"
 
-    extcall managed_asset.transfer(self.bribe_logic.address, self.total_incentives)
+    extcall managed_asset.transfer(
+        self.bribe_logic.address, self.total_incentives
+    )
 
     for gauge: address in self.pending_gauges:
         amount: uint256 = self.amount_for_gauge[gauge]
         data: Bytes[MAX_DATA_SIZE] = self.data_for_gauge[gauge]
         extcall self.bribe_logic.bribe(gauge, amount, data)
 
-    assert staticcall managed_asset.balanceOf(self.bribe_logic.address) == 0, "manager: bribe not fully spent"
+    assert (
+        staticcall managed_asset.balanceOf(self.bribe_logic.address) == 0
+    ), "manager: bribe not fully spent"
 
     self.incentives_locked = False
     self.total_incentives = 0
@@ -232,10 +263,15 @@ def recover_erc20(token: address, receiver: address):
     """
     access_control._check_role(TOKEN_RESCUER, msg.sender)
 
-    assert token != managed_asset.address, "manager: cannot recover managed asset"
+    assert (
+        token != managed_asset.address
+    ), "manager: cannot recover managed asset"
 
     balance: uint256 = staticcall IERC20(token).balanceOf(self)
-    assert extcall IERC20(token).transfer(receiver, balance, default_return_value=True)
+    assert extcall IERC20(token).transfer(
+        receiver, balance, default_return_value=True
+    )
+
 
 @external
 def emergency_migration(receiver: address):

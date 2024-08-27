@@ -21,20 +21,25 @@ initializes: multiclaim
 initializes: ownable
 exports: (ownable.__interface__, multiclaim.__interface__)
 
+
 event SetWeights:
     distribution_weight: uint256
 
+
 event SetReceivers: pass
+
 
 event FeeDispatched:
     receiver: address
     weight: uint256
 
-struct Receiver:
-    addr: address
-    weight: uint256
 
-version: public(constant(String[8])) = "0.1.0" # no guarantees on abi stability
+struct Receiver:
+        addr: address
+        weight: uint256
+
+
+version: public(constant(String[8])) = "0.1.0"  # no guarantees on abi stability
 
 # maximum number of splits
 MAX_RECEIVERS: constant(uint256) = 100
@@ -48,8 +53,14 @@ receivers: public(DynArray[Receiver, MAX_RECEIVERS])
 
 crvusd: immutable(IERC20)
 
+
 @deploy
-def __init__(_crvusd: IERC20, _factory: multiclaim.ControllerFactory, receivers: DynArray[Receiver, MAX_RECEIVERS], owner: address):
+def __init__(
+    _crvusd: IERC20,
+    _factory: multiclaim.ControllerFactory,
+    receivers: DynArray[Receiver, MAX_RECEIVERS],
+    owner: address,
+):
     """
     @notice Contract constructor
     @param _crvusd The address of the crvUSD token contract
@@ -87,12 +98,16 @@ def _is_dynamic(addr: address) -> bool:
     response: Bytes[32] = b""
     success, response = raw_call(
         addr,
-        abi_encode(DYNAMIC_WEIGHT_EIP165_ID, method_id=method_id("supportsInterface(bytes4)")),
+        abi_encode(
+            DYNAMIC_WEIGHT_EIP165_ID,
+            method_id=method_id("supportsInterface(bytes4)"),
+        ),
         max_outsize=32,
         is_static_call=True,
-        revert_on_failure=False
+        revert_on_failure=False,
     )
     return success and convert(response, bool) or len(response) > 32
+
 
 def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
     assert len(receivers) > 0, "receivers: empty"
@@ -107,9 +122,14 @@ def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
 
     log SetReceivers()
 
+
 @nonreentrant
 @external
-def dispatch_fees(controllers: DynArray[multiclaim.Controller, multiclaim.MAX_CONTROLLERS]=[]):
+def dispatch_fees(
+    controllers: DynArray[
+        multiclaim.Controller, multiclaim.MAX_CONTROLLERS
+    ] = []
+):
     """
     @notice Claim fees from all controllers and distribute them
     @param controllers The list of controllers to claim fees from (default: all)
@@ -160,6 +180,7 @@ def set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
 
     self._set_receivers(receivers)
 
+
 @view
 @external
 def excess_receiver() -> address:
@@ -172,6 +193,7 @@ def excess_receiver() -> address:
     """
     receivers_length: uint256 = len(self.receivers)
     return self.receivers[receivers_length - 1].addr
+
 
 @view
 @external
