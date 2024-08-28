@@ -47,9 +47,9 @@ event UpdateIncentivesState:
 
 
 struct IncentivePayload:
-        gauge: address
-        amount: uint256
-        data: Bytes[MAX_DATA_SIZE]
+    gauge: address
+    amount: uint256
+    data: Bytes[MAX_DATA_SIZE]
 
 
 MAX_INCENTIVES_PER_GAUGE: public(constant(uint256)) = (

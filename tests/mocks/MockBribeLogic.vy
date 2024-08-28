@@ -10,9 +10,9 @@ manager: address
 
 
 struct IncentivePayload:
-        gauge: address
-        amount: uint256
-        data: Bytes[1024]
+    gauge: address
+    amount: uint256
+    data: Bytes[1024]
 
 
 received_payloads: public(DynArray[IncentivePayload, 1000])

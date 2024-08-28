@@ -35,8 +35,8 @@ event FeeDispatched:
 
 
 struct Receiver:
-        addr: address
-        weight: uint256
+    addr: address
+    weight: uint256
 
 
 version: public(constant(String[8])) = "0.1.0"  # no guarantees on abi stability
