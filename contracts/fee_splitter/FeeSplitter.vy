@@ -45,8 +45,7 @@ version: public(constant(String[8])) = "0.1.0"  # no guarantees on abi stability
 MAX_RECEIVERS: constant(uint256) = 100
 # maximum basis points (100%)
 MAX_BPS: constant(uint256) = 10_000
-# TODO placeholder
-DYNAMIC_WEIGHT_EIP165_ID: constant(bytes4) = 0x12431234
+DYNAMIC_WEIGHT_EIP165_ID: constant(bytes4) = 0xA1AAB33F
 
 # receiver logic
 receivers: public(DynArray[Receiver, MAX_RECEIVERS])
