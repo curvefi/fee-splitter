@@ -12,13 +12,14 @@ in a single transaction and distributes them according to some weights.
 from ethereum.ercs import IERC20
 from ethereum.ercs import IERC165
 
-import DynamicWeight
-import ControllerMulticlaim as multiclaim
+from contracts.interfaces import IDynamicWeight
 
+import ControllerMulticlaim as multiclaim
 from snekmate.auth import ownable
 
 initializes: multiclaim
 initializes: ownable
+
 exports: (ownable.__interface__, multiclaim.__interface__)
 
 
@@ -56,7 +57,7 @@ crvusd: immutable(IERC20)
 @deploy
 def __init__(
     _crvusd: IERC20,
-    _factory: multiclaim.ControllerFactory,
+    _factory: multiclaim.IControllerFactory,
     receivers: DynArray[Receiver, MAX_RECEIVERS],
     owner: address,
 ):
@@ -64,7 +65,7 @@ def __init__(
     @notice Contract constructor
     @param _crvusd The address of the crvUSD token contract
     @param _factory The address of the crvUSD controller factory
-    @param receivers The list of receivers (address, weight, dynamic).
+    @param receivers The list of receivers (address, weight).
         Last item in the list is the excess receiver by default.
     @param owner The address of the contract owner
     """
@@ -126,7 +127,7 @@ def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
 @external
 def dispatch_fees(
     controllers: DynArray[
-        multiclaim.Controller, multiclaim.MAX_CONTROLLERS
+        multiclaim.IController, multiclaim.MAX_CONTROLLERS
     ] = []
 ):
     """
@@ -148,7 +149,7 @@ def dispatch_fees(
         weight: uint256 = r.weight
 
         if self._is_dynamic(r.addr):
-            dynamic_weight: uint256 = staticcall DynamicWeight(r.addr).weight()
+            dynamic_weight: uint256 = staticcall IDynamicWeight(r.addr).weight()
 
             # `weight` acts as a cap to the dynamic weight, preventing
             # receivers to ask for more than what they are allowed to.
