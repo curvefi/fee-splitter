@@ -31,7 +31,7 @@ event SetReceivers: pass
 
 
 event FeeDispatched:
-    receiver: address
+    receiver: indexed(address)
     weight: uint256
 
 
