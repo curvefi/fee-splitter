@@ -158,6 +158,8 @@ def dispatch_fees(
         if i == len(self.receivers) - 1:
             weight += excess
 
+        # precision loss can lead to a negligible amount of
+        # dust to be left in the contract after this transfer
         extcall crvusd.transfer(r.addr, balance * weight // MAX_BPS)
 
         log FeeDispatched(r.addr, weight)
