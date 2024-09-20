@@ -1,6 +1,10 @@
 import boa
+import pytest
 
-from tests.mocks import MockDynamicWeight
+
+@pytest.fixture(scope="module")
+def mock_dynamic_weight_deployer():
+    return boa.load_partial("tests/mocks/MockDynamicWeight.vy")
 
 
 def fixed(percentage):
@@ -8,7 +12,7 @@ def fixed(percentage):
 
 
 def dynamic(percentage):
-    return MockDynamicWeight().address, percentage
+    return boa.load("tests/mocks/MockDynamicWeight.vy").address, percentage
 
 
 # @pytest.mark.gas_profile
@@ -24,7 +28,7 @@ def test_single_fixed_receiver(
 
     for c in controllers:
         c.eval(f"self.mock_receiver = {fs.address}")
-        crvusd.mint_for_testing(c, 10**20)
+        boa.deal(crvusd, c, 10**20)
     fs.dispatch_fees()
 
     assert sum(crvusd.balanceOf(c) for c in controllers) == 0
@@ -44,7 +48,7 @@ def test_single_dynamic_receiver(fee_splitter_with_controllers, crvusd, owner):
 
     for c in controllers:
         c.eval(f"self.mock_receiver = {fs.address}")
-        crvusd.mint_for_testing(c, 10**20)
+        boa.deal(crvusd, c, 10**20)
     fs.dispatch_fees()
 
     assert sum(crvusd.balanceOf(c) for c in controllers) == 0
@@ -54,7 +58,9 @@ def test_single_dynamic_receiver(fee_splitter_with_controllers, crvusd, owner):
     )
 
 
-def test_dynamic_and_fixed(fee_splitter_with_controllers, crvusd, owner):
+def test_dynamic_and_fixed(
+    fee_splitter_with_controllers, crvusd, owner, mock_dynamic_weight_deployer
+):
     fs, controllers = fee_splitter_with_controllers
 
     receivers = [dynamic(7_000), fixed(3_000)]
@@ -62,11 +68,11 @@ def test_dynamic_and_fixed(fee_splitter_with_controllers, crvusd, owner):
     with boa.env.prank(owner):
         fs.set_receivers(receivers)
 
-    weight = MockDynamicWeight.at(receivers[0][0])
+    weight = mock_dynamic_weight_deployer.at(receivers[0][0])
 
     for c in controllers:
         c.eval(f"self.mock_receiver = {fs.address}")
-        crvusd.mint_for_testing(c, 10**20)
+        boa.deal(crvusd, c, 10**20)
 
     # case 1: weight is less than cap
     weight.set_weight(5_000)

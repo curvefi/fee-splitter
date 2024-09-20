@@ -9,30 +9,22 @@ def owner():
 
 @fixture
 def fee_splitter_deployer():
-    from contracts.fee_splitter import FeeSplitter
-
-    return FeeSplitter
+    return boa.load_partial("contracts/FeeSplitter.vy")
 
 
 @fixture()
 def mock_factory():
-    from tests.mocks import MockControllerFactory
-
-    return MockControllerFactory()
+    return boa.load("tests/mocks/MockControllerFactory.vy")
 
 
 @fixture
 def mock_controller_deployer():
-    from tests.mocks import MockController
-
-    return MockController
+    return boa.load_partial("tests/mocks/MockController.vy")
 
 
 @fixture
 def mock_dynamic_weight_deployer():
-    from tests.mocks import MockDynamicWeight
-
-    return MockDynamicWeight
+    return boa.load_partial("tests/mocks/MockDynamicWeight.vy")
 
 
 @fixture(params=range(3))

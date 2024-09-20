@@ -1,11 +1,10 @@
+import boa
 from pytest import fixture
 
 
 @fixture
 def multiclaim_deployer():
-    from contracts.fee_splitter import ControllerMulticlaim
-
-    return ControllerMulticlaim
+    return boa.load_partial("contracts/ControllerMulticlaim.vy")
 
 
 @fixture
