@@ -23,10 +23,6 @@ initializes: ownable
 exports: (ownable.__interface__, multiclaim.__interface__)
 
 
-event SetWeights:
-    distribution_weight: uint256
-
-
 event SetReceivers: pass
 
 
