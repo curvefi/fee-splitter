@@ -106,7 +106,7 @@ def _is_dynamic(addr: address) -> bool:
         is_static_call=True,
         revert_on_failure=False,
     )
-    return success and convert(response, bool) or len(response) > 32
+    return success and convert(response, bool)
 
 
 def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
