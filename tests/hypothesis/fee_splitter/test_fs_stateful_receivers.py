@@ -1,10 +1,7 @@
-from hypothesis import settings
 from hypothesis.stateful import precondition, rule
 
 from tests.hypothesis.fee_splitter.stateful_base import FeeSplitterStatefulBase
 from tests.hypothesis.strategies import receivers
-
-settings.load_profile("debug")
 
 
 class FeeSplitterStateful(FeeSplitterStatefulBase):

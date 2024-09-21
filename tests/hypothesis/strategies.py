@@ -9,17 +9,17 @@ from hypothesis.strategies import (
     lists,
 )
 
+from tests.hypothesis.utils import (
+    controller_deployer,
+    dynamic_weight_deployer,
+    factory_deployer,
+    fee_splitter_deployer,
+)
+
 MAX_BPS = 10_000
 ZERO = boa.eval("empty(address)")
 
 addresses = boa_st("address").filter(lambda addr: addr != ZERO)
-
-# even if compilation is cached by boa compilation should never be done
-# inside the strategies as it hurts test speed.
-factory_deployer = boa.load_partial("tests/mocks/MockControllerFactory.vy")
-fee_splitter_deployer = boa.load_partial("contracts/FeeSplitter.vy")
-controller_deployer = boa.load_partial("tests/mocks/MockController.vy")
-dynamic_weight_deployer = boa.load_partial("tests/mocks/MockDynamicWeight.vy")
 
 
 @composite
@@ -57,9 +57,13 @@ def receivers(draw, n=0):
     for i in range(n):
         if is_dynamic[i]:
             mock_dynamic_weight = dynamic_weight_deployer()
-            receivers_list.append((mock_dynamic_weight.address, _weights[i]))
+            receivers_list.append(
+                (mock_dynamic_weight.address, _weights[i], True)
+            )
         else:
-            receivers_list.append((draw(addresses), _weights[i]))
+            receivers_list.append(
+                (boa.env.generate_address(), _weights[i], False)
+            )
 
     return receivers_list
 
@@ -72,7 +76,8 @@ def fee_splitters(draw):
     _crvusd = draw(crvusd)
 
     _factory = factory_deployer()
-    _receivers = draw(receivers())
+    # remove the bool flag as it's not required by the constructor
+    _receivers = [(r[0], r[1]) for r in draw(receivers())]
     _owner = draw(addresses)
 
     return fee_splitter_deployer(_crvusd, _factory, _receivers, _owner)

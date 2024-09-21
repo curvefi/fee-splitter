@@ -1,17 +1,15 @@
 import boa
-from hypothesis import given, settings
+from hypothesis import given
 
 from tests.hypothesis.strategies import fee_splitters, receivers
-
-settings.load_profile("debug")
 
 
 @given(fs=fee_splitters(), rs=receivers())
 def test_receivers(fs, rs):
     zero = boa.eval("empty(address)")
 
-    with boa.env.prank(fs.owner()):
-        fs.set_receivers(rs)
+    rs = [(r[0], r[1]) for r in rs]
+    fs.set_receivers(rs, sender=fs.owner())
 
     total_weight = 0
     for i in range(fs.n_receivers()):

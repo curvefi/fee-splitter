@@ -6,7 +6,7 @@ from tests.hypothesis.strategies import controllers
 
 
 class ControllerUpdate(FeeSplitterStatefulBase):
-    @rule(controller=controllers())
+    @rule(controller=controllers)
     def add_controller_rule(self, controller):
         self.add_controller_to_factory(controller)
 

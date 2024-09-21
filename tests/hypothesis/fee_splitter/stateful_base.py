@@ -1,21 +1,23 @@
-import random
-
 import boa
 from hypothesis import note
 from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant
 
 from tests.hypothesis.strategies import controllers, crvusd, fee_splitters
-from tests.mocks import MockControllerFactory, MockDynamicWeight
+from tests.hypothesis.utils import (
+    dynamic_weight_deployer,
+    factory_deployer,
+    generate_random_weight,
+)
 
 
 class FeeSplitterStatefulBase(RuleBasedStateMachine):
-    @initialize(fs=fee_splitters(), controller=controllers(), _crvusd=crvusd)
+    @initialize(fs=fee_splitters(), controller=controllers, _crvusd=crvusd)
     def setup(self, fs, controller, _crvusd):
         note("[SETUP]")
 
         # setup for controllers test
         self.fs = fs
-        self.factory = MockControllerFactory.at(
+        self.factory = factory_deployer.at(
             fs.eval("multiclaim.factory.address")
         )
 
@@ -42,25 +44,15 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
     def randomize_dynamic_weights(self):
         note("[RANDOMIZE WEIGHTS]")
 
-        def generate_random_weight(center, min_val=1, max_val=10000):
-            # Ensure center is within the valid range
-            center = max(min_val, min(center, max_val))
-
-            while True:
-                # Generate a random value using a normal distribution
-                value = random.gauss(center, (max_val - min_val) / 6)
-
-                # Round to the nearest integer
-                value = round(value)
-
-                # Check if the value is within the desired range
-                if min_val < value <= max_val:
-                    return value
-
         for addr, weight, dynamic in self.receivers:
             if dynamic:
                 new_weight = generate_random_weight(weight)
-                MockDynamicWeight.at(addr).set_weight(new_weight)
+                note(
+                    "addr: {} weight: {} -> {}".format(
+                        addr, weight, new_weight
+                    )
+                )
+                dynamic_weight_deployer.at(addr).set_weight(new_weight)
 
     def dispatch_fees(self):
         note("[DISPATCH]")
@@ -96,9 +88,9 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
 
     def set_receivers(self, receivers):
         note("[SET_RECEIVERS]")
-        with boa.env.prank(self.fs.owner()):
-            self.fs.set_receivers(receivers)
         self.receivers = receivers
+        receivers_arg = [(r[0], r[1]) for r in receivers]
+        self.fs.set_receivers(receivers_arg, sender=self.fs.owner())
         self.claimed_since_receivers_change = False
 
     def update_controllers(self):
@@ -112,4 +104,4 @@ class FeeSplitterStatefulBase(RuleBasedStateMachine):
         # simulate fee accrual which should happen every second
         # by minting 10**19 after every rule to all controllers.
         for c in self.fs_controllers:
-            self.crvusd.mint_for_testing(c, 10**19)
+            boa.deal(self.crvusd, c, 10**19)

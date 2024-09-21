@@ -1,7 +1,6 @@
 import boa
 
 
-# TODO test this proper in stateful testing
 def test_expected_behavior(fee_splitter_deployer, crvusd, mock_factory, owner):
     receivers = [
         (boa.env.generate_address(), 1),
