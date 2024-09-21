@@ -67,7 +67,7 @@ The `scripts/deploy_fee_splitter.ipynb` Jupyter notebook provides a step-by-step
 
 ## Autobribe
 
-This codebase used to be home to autobribe, a protocol that never saw the light of day. Its **unfinished** code can still be found [here](https://github.com/username/repository/releases/tag/autobribe).
+This codebase used to be home to autobribe, a protocol that never saw the light of day. Its **unfinished** code can still be found [here](https://github.com/curvefi/fee-splitter/tree/autobribe).
 
 ## Security
 
