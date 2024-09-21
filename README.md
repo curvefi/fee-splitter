@@ -44,15 +44,16 @@ The project includes a comprehensive testing suite:
 ## Development Setup
 
 1. Install dependencies:
-   ```
+   ```bash
    poetry install
+   forge install
    ```
 
 2. Run tests:
-   ```
-   pytest tests/unitary
-   pytest tests/integration
-   pytest tests/hypothesis
+   ```bash
+   pytest tests/unitary # unit tests
+   forge t # integration test
+   pytest tests/hypothesis # stateful/fuzz testing
    ```
 
 3. For deployment scripts and interactions, see the `scripts/` directory.
