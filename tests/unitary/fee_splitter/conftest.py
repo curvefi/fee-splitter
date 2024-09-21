@@ -1,33 +1,33 @@
 import boa
-from pytest import fixture
+import pytest
 
 
-@fixture
+@pytest.fixture(scope="module")
 def owner():
     return boa.env.generate_address()
 
 
-@fixture
+@pytest.fixture(scope="module")
 def fee_splitter_deployer():
     return boa.load_partial("contracts/FeeSplitter.vy")
 
 
-@fixture()
+@pytest.fixture(scope="module")
 def mock_factory():
     return boa.load("tests/mocks/MockControllerFactory.vy")
 
 
-@fixture
+@pytest.fixture(scope="module")
 def mock_controller_deployer():
     return boa.load_partial("tests/mocks/MockController.vy")
 
 
-@fixture
+@pytest.fixture(scope="module")
 def mock_dynamic_weight_deployer():
     return boa.load_partial("tests/mocks/MockDynamicWeight.vy")
 
 
-@fixture(params=range(3))
+@pytest.fixture(scope="module", params=range(3))
 def receivers(request, mock_dynamic_weight_deployer):
     receivers_possibilities = [
         [(mock_dynamic_weight_deployer().address, 10_000)],
@@ -40,14 +40,14 @@ def receivers(request, mock_dynamic_weight_deployer):
     return receivers_possibilities[request.param]
 
 
-@fixture
+@pytest.fixture(scope="module")
 def fee_splitter(
     fee_splitter_deployer, crvusd, receivers, mock_factory, owner
 ):
     return fee_splitter_deployer(crvusd, mock_factory, receivers, owner)
 
 
-@fixture
+@pytest.fixture(scope="module")
 def fee_splitter_with_controllers(
     fee_splitter, mock_factory, mock_controller_deployer, crvusd
 ):

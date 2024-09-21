@@ -1,18 +1,18 @@
 import boa
-from pytest import fixture
+import pytest
 
 
-@fixture
+@pytest.fixture(scope="module")
 def multiclaim_deployer():
     return boa.load_partial("contracts/ControllerMulticlaim.vy")
 
 
-@fixture
+@pytest.fixture(scope="module")
 def multiclaim(multiclaim_deployer, mock_factory):
     return multiclaim_deployer(mock_factory)
 
 
-@fixture
+@pytest.fixture(scope="module")
 def multiclaim_with_controllers(
     multiclaim, mock_factory, mock_controller_deployer, erc20_deployer
 ):
