@@ -1,6 +1,5 @@
 import boa
 from boa.test import strategy as boa_st
-from hypothesis import assume
 from hypothesis.strategies import (
     booleans,
     builds,
@@ -10,10 +9,17 @@ from hypothesis.strategies import (
     lists,
 )
 
-address = boa_st("address")
-
 MAX_BPS = 10_000
 ZERO = boa.eval("empty(address)")
+
+addresses = boa_st("address").filter(lambda addr: addr != ZERO)
+
+# even if compilation is cached by boa compilation should never be done
+# inside the strategies as it hurts test speed.
+factory_deployer = boa.load_partial("tests/mocks/MockControllerFactory.vy")
+fee_splitter_deployer = boa.load_partial("contracts/FeeSplitter.vy")
+controller_deployer = boa.load_partial("tests/mocks/MockController.vy")
+dynamic_weight_deployer = boa.load_partial("tests/mocks/MockDynamicWeight.vy")
 
 
 @composite
@@ -50,12 +56,10 @@ def receivers(draw, n=0):
     receivers_list = []
     for i in range(n):
         if is_dynamic[i]:
-            mock_dynamic_weight = boa.load("tests/mocks/MockDynamicWeight.vy")
+            mock_dynamic_weight = dynamic_weight_deployer()
             receivers_list.append((mock_dynamic_weight.address, _weights[i]))
         else:
-            receiver_address = draw(address)
-            assume(receiver_address != ZERO)
-            receivers_list.append((draw(address), _weights[i]))
+            receivers_list.append((draw(addresses), _weights[i]))
 
     return receivers_list
 
@@ -67,18 +71,15 @@ crvusd = just(boa.load("tests/mocks/MockERC20.vy"))
 def fee_splitters(draw):
     _crvusd = draw(crvusd)
 
-    _factory = boa.load("tests/mocks/MockControllerFactory.vy")
+    _factory = factory_deployer()
     _receivers = draw(receivers())
-    _owner = draw(address)
-    assume(_owner != ZERO)
+    _owner = draw(addresses)
 
-    return boa.load(
-        "contracts/FeeSplitter.vy", _crvusd, _factory, _receivers, _owner
-    )
+    return fee_splitter_deployer(_crvusd, _factory, _receivers, _owner)
 
 
-controllers = builds(boa.load_partial("tests/mocks/MockController.vy"), crvusd)
+controllers = builds(controller_deployer, crvusd)
 
 
 if __name__ == "__main__":
-    print(weights(123).example())
+    print(fee_splitters().example())
