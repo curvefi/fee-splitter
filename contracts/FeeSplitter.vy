@@ -14,13 +14,22 @@ from ethereum.ercs import IERC165
 
 from contracts.interfaces import IDynamicWeight
 
-import ControllerMulticlaim as multiclaim
 from snekmate.auth import ownable
-
-initializes: multiclaim
 initializes: ownable
+exports: (
+    ownable.transfer_ownership,
+    ownable.renounce_ownership,
+    ownable.owner
+)
 
-exports: (ownable.__interface__, multiclaim.__interface__)
+import ControllerMulticlaim as multiclaim
+initializes: multiclaim
+exports: (
+    multiclaim.update_controllers,
+    multiclaim.n_controllers,
+    multiclaim.allowed_controllers,
+    multiclaim.controllers
+)
 
 
 event SetReceivers: pass
