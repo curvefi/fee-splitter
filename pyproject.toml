@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "autobribe"
+name = "fee-splitter"
 version = "0.1.0"
 description = ""
 authors = ["Curve.fi"]
