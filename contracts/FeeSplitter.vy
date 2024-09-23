@@ -33,6 +33,7 @@ exports: (
 
 
 event SetReceivers: pass
+event LivenessProtectionTriggered: pass
 
 
 event FeeDispatched:
@@ -114,6 +115,32 @@ def _is_dynamic(addr: address) -> bool:
     return success and convert(response, bool)
 
 
+def _get_dynamic_weight(addr: address) -> uint256:
+    success: bool = False
+    response: Bytes[32] = b""
+    success, response = raw_call(
+        addr,
+        method_id("weight()"),
+        max_outsize=32,
+        is_static_call=True,
+        revert_on_failure=False,
+    )
+
+    if success:
+        return convert(response, uint256)
+    else:
+        # ! DANGER !
+        # If we got here something went wrong. This condition
+        # is here to preserve liveness but it also means that
+        # a receiver is not getting any money.
+        # ! DANGER !
+        log LivenessProtectionTriggered()
+
+        return 0
+
+
+
+
 def _set_receivers(receivers: DynArray[Receiver, MAX_RECEIVERS]):
     assert len(receivers) > 0, "receivers: empty"
     total_weight: uint256 = 0
@@ -154,7 +181,7 @@ def dispatch_fees(
         weight: uint256 = r.weight
 
         if self._is_dynamic(r.addr):
-            dynamic_weight: uint256 = staticcall IDynamicWeight(r.addr).weight()
+            dynamic_weight: uint256 = self._get_dynamic_weight(r.addr)
 
             # `weight` acts as a cap to the dynamic weight, preventing
             # receivers to ask for more than what they are allowed to.
