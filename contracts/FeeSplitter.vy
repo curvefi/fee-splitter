@@ -12,8 +12,6 @@ in a single transaction and distributes them according to some weights.
 from ethereum.ercs import IERC20
 from ethereum.ercs import IERC165
 
-from contracts.interfaces import IDynamicWeight
-
 from snekmate.auth import ownable
 initializes: ownable
 exports: (
