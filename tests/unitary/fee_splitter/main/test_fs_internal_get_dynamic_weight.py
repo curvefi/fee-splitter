@@ -8,19 +8,21 @@ import pytest
 def mock_dynamic_weight(mock_dynamic_weight_deployer):
     return mock_dynamic_weight_deployer()
 
+
 @pytest.fixture(scope="module")
 def mock_reverting_weight():
-    source = textwrap.dedent("""
+    source = textwrap.dedent(
+        """
     # pragma version ~=0.4.0
 
     @view
     @external
     def weight() -> uint256:
         raise "Always reverts"
-    """)
+    """
+    )
 
     return boa.loads(source)
-
 
 
 def test_default_behavior(fee_splitter, mock_dynamic_weight):
