@@ -57,9 +57,8 @@ def update_controllers():
     """
     old_len: uint256 = len(self.controllers)
     new_len: uint256 = staticcall factory.n_collaterals()
-    for i: uint256 in range(new_len - old_len, bound=MAX_CONTROLLERS):
-        i_shifted: uint256 = i + old_len
-        c: IController = IController(staticcall factory.controllers(i_shifted))
+    for i: uint256 in range(old_len, new_len, bound=MAX_CONTROLLERS):
+        c: IController = IController(staticcall factory.controllers(i))
         self.allowed_controllers[c] = True
         self.controllers.append(c)
 
