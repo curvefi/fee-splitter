@@ -13,4 +13,4 @@ evm_version="cancun"
 path = "vyper"
 
 [rpc_endpoints]
-mainnet = "${RPC_URL}"
+mainnet = "${ETH_RPC_URL}"
