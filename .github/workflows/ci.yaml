@@ -1,18 +1,51 @@
-name: pre-commit
+name: CI Workflow
 
 on: [push]
 
 jobs:
 
+  # Linting with Pre-commit
   lint:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Python 3.10.4
-        uses: actions/setup-python@v4
+      - name: Setup Python 3.12.6
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10.4
+          python-version: 3.12.6
 
-      - uses: pre-commit/action@v3.0.0
+      # Run pre-commit hooks (e.g., black, flake8, isort)
+      - uses: pre-commit/action@v3.0.1
+
+  # Test Runs
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        test_type: [hypothesis, integration, unitary]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Python 3.12.6
+      - name: Setup Python 3.12.6
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.6
+
+      # Install dependencies
+      - name: Setup Poetry and Install Dependencies
+        run: |
+          pip install poetry==1.8.3
+          poetry config virtualenvs.in-project true
+          poetry install --no-interaction
+
+      # Run the appropriate test suite based on the matrix
+      - name: Run Tests
+        run: |
+          source .venv/bin/activate
+          pytest --numprocesses=auto --dist=loadscope tests/${{ matrix.test_type }}
