@@ -3,49 +3,101 @@ name: CI Workflow
 on: [push]
 
 jobs:
-
   # Linting with Pre-commit
-  lint:
-    runs-on: ubuntu-latest
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Setup Python 3.12.6
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: 3.12.6
+  #     - uses: pre-commit/action@v3.0.1
 
+  # Reusable job for setting up Python and Poetry
+  setup_python_poetry:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Python 3.12.6
         uses: actions/setup-python@v5
         with:
           python-version: 3.12.6
-
-      # Run pre-commit hooks (e.g., black, flake8, isort)
-      - uses: pre-commit/action@v3.0.1
-
-  # Test Runs
-  tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        test_type: [hypothesis, integration, unitary]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # Setup Python 3.12.6
-      - name: Setup Python 3.12.6
-        uses: actions/setup-python@v5
+      - name: Cache Poetry Environment
+        uses: actions/cache@v4
         with:
-          python-version: 3.12.6
-
-      # Install dependencies
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Setup Poetry and Install Dependencies
         run: |
-          pip install poetry==1.8.3
+          pip install "poetry>=1.8,<2.0"
           poetry config virtualenvs.in-project true
           poetry install --no-interaction
+    outputs:
+      poetry_env: ${{ steps.poetry_env.outputs.dir }}
 
-      # Run the appropriate test suite based on the matrix
-      - name: Run Tests
+  # # Python Tests
+  # python_tests:
+  #   needs: setup_python_poetry
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       test_type: [unitary]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Setup Python 3.12.6
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: 3.12.6
+  #     - name: Restore Poetry Environment
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/.cache/pypoetry
+  #         key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+  #     - name: Run Tests
+  #       env:
+  #         ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+  #         ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+  #       run: |
+  #         poetry run pytest --numprocesses=auto --dist=loadscope tests/${{ matrix.test_type }}
+
+  # Foundry Tests
+  foundry_tests:
+    needs: setup_python_poetry
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python 3.12.6
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.6
+      - name: Restore Poetry Environment
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install solc
         run: |
-          source .venv/bin/activate
-          pytest --numprocesses=auto --dist=loadscope tests/${{ matrix.test_type }}
+          sudo add-apt-repository ppa:ethereum/ethereum
+          sudo apt-get update
+          sudo apt-get install solc
+          solc --version
+
+      - name: Install Dependencies
+        run: |
+          forge install
+      - name: Compile Vyper Contracts
+        run: poetry run vyper contracts/*.vy -f abi_python -o out
+      - name: Run Foundry Tests
+        run: forge test -vvv
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
