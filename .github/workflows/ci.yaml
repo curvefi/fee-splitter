@@ -1,18 +1,63 @@
-name: pre-commit
+name: CI Workflow
 
 on: [push]
 
 jobs:
-
   lint:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Python 3.10.4
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Setup Python 3.12.6
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10.4
+          python-version: 3.12.6
+      - uses: pre-commit/action@v3.0.1
 
-      - uses: pre-commit/action@v3.0.0
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        test_type: [unitary, hypothesis]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python 3.12.6
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.6
+      - name: Install Poetry
+        run: |
+          pip install "poetry>=1.8,<2.0"
+          poetry config virtualenvs.in-project true
+      - name: Install dependencies
+        run: poetry install --no-interaction
+      - name: Run Pytest
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: poetry run pytest --numprocesses=auto --dist=loadscope tests/${{ matrix.test_type }}
+
+  foundry_tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python 3.12.6
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.6
+      - name: Install Poetry
+        run: |
+          pip install "poetry>=1.8,<2.0"
+          poetry config virtualenvs.in-project true
+      - name: Install dependencies
+        run: poetry install --no-interaction
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Install Forge-std
+        run: forge install foundry-rs/forge-std --no-commit
+      - name: Run Foundry Tests
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: forge test --match-path "tests/integration/*"

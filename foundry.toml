@@ -7,10 +7,13 @@ libs = ["lib", ".venv/lib/python3.12/site-packages"]
 skip = ["**/snekmate/**/*[!c][!k].vy", "**/snekmate/**/*.vyi"] # Skip the compilation of non-mock and interface files.
 evm_version="cancun"
 
+[fmt]
+line_length = 100
+
 [vyper]
 # You need vyper to be in your PATH environment
 # variable for this to work
-path = "vyper"
+path = ".venv/bin/vyper"
 
 [rpc_endpoints]
 mainnet = "${ETH_RPC_URL}"
