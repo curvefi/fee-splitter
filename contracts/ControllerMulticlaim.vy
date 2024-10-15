@@ -18,7 +18,7 @@ allowed_controllers: public(HashMap[IController, bool])
 controllers: public(DynArray[IController, MAX_CONTROLLERS])
 
 # maximum number of claims in a single transaction
-MAX_CONTROLLERS: constant(uint256) = 50000
+MAX_CONTROLLERS: constant(uint256) = 50
 
 
 @deploy
