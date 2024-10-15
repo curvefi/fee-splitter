@@ -60,7 +60,7 @@ The project includes a comprehensive testing suite:
 
 # Audit
 
-The contract is currently under audit by Chainsecurity.
+The contract has been audited by Chainsecurity, the report can be found [here](audits/ChainSecurity.pdf).
 
 ## Contract Deployment
 
